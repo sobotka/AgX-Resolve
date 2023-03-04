@@ -878,6 +878,13 @@ return RGB;
 */
 
 
+__DEVICE__ float3 encode_inverse_EOTF(float3 rgb, float EOTF) {
+  rgb.x = _powf(rgb.x, 1.0f / EOTF);
+  rgb.y = _powf(rgb.y, 1.0f / EOTF);
+  rgb.z = _powf(rgb.z, 1.0f / EOTF);
+
+  return rgb;
+}
 
 __DEVICE__ float3 lin2log(float3 rgb, int tf) {
   if (tf == 0) return rgb;
@@ -939,21 +946,23 @@ __DEVICE__ float3 lin2log(float3 rgb, int tf) {
     rgb.y = rgb.y<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.y ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.y + 1.0f ) + 0.092864125f;
     rgb.z = rgb.z<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.z ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.z + 1.0f ) + 0.092864125f;
   }
- else if (tf == 11){  // Flog2
-    const float a = 5.555556f;
-    const float b = 0.064829f;
-    const float c = 0.245281f;
-    const float d = 0.384316f;
-    const float e = 8.799461f;
-    const float f = 0.092864f;
-    const float cut1 = 0.000889f; // Should be equal to ((cut2 - f) / e)
-    //const float cut2 = 0.100686685370811f; // should be equal to (e * cut1 + f)
+  else if (tf == 11){  // Flog2
+      const float a = 5.555556f;
+      const float b = 0.064829f;
+      const float c = 0.245281f;
+      const float d = 0.384316f;
+      const float e = 8.799461f;
+      const float f = 0.092864f;
+      const float cut1 = 0.000889f; // Should be equal to ((cut2 - f) / e)
+      //const float cut2 = 0.100686685370811f; // should be equal to (e * cut1 + f)
 
-    rgb.x = rgb.x>=cut1?(c * _log10f(a * rgb.x + b) + d):(e * rgb.x + f);
-    rgb.y = rgb.y>=cut1?(c * _log10f(a * rgb.y + b) + d):(e * rgb.y + f);
-    rgb.z = rgb.z>=cut1?(c * _log10f(a * rgb.z + b) + d):(e * rgb.z + f);
-}
-
+      rgb.x = rgb.x>=cut1?(c * _log10f(a * rgb.x + b) + d):(e * rgb.x + f);
+      rgb.y = rgb.y>=cut1?(c * _log10f(a * rgb.y + b) + d):(e * rgb.y + f);
+      rgb.z = rgb.z>=cut1?(c * _log10f(a * rgb.z + b) + d):(e * rgb.z + f);
+  }
+  // else if (tf == 12) {
+  //     // BMFilm Placeholder
+  // }
   return rgb;
 }
 
