@@ -26,8 +26,9 @@ You'll have to take it for a try.
 
 1. Install as per Where above.
 2. Add a Colour Space Transform node to your footage. Convert to ARRI Wide Gamut Version 3, and ARRI LogC Version 3.
-3. Place a DCTL node after the footage. Select the Camera-AgX DCTL.
-4. Experiment.
+3. Turn DaVinci's Garbage Tone Mapping to None.
+5. Place a DCTL node after the footage. Select the Camera-AgX DCTL.
+6. Experiment.
 
 # Parameters
 These parameters work together, and thus one can expect any single parameter to drive other potential colour qualia.
