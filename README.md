@@ -1,3 +1,9 @@
+# Who Wrote This Code?
+
+This code was written by Jed Smith and Juan Pablo Zambrano. The base I believe was written by Jed Smith, and Juan Pablo Zambrano added the AgX mechanisms.
+
+This repository includes some minor changes by the repository owner.
+
 # AgX-Resolve
 
 AgX Picture Formation for DaVinci Resolve
