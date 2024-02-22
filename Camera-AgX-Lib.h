@@ -699,8 +699,21 @@ angle = XYZ.x ==0.0f? 0.0f:angle;
 angle = angle - Roffset;
 angle = angle>1?angle - 1:angle<0?angle+1:angle;
 
-float slope = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.x : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.x : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.x : 1;
-float Bound = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.y : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.y : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.y: 1;
+float slope, Bound;
+
+if (angle > Gangle && angle <= Bangle) {
+    slope = RGBBoundaries.blue.x;
+    Bound = RGBBoundaries.blue.y;
+} else if (angle > Bangle || angle <= Rangle) {
+    slope = RGBBoundaries.green.x;
+    Bound = RGBBoundaries.green.y;
+} else if (angle > Rangle && angle <= Gangle) {
+    slope = RGBBoundaries.red.x;
+    Bound = RGBBoundaries.red.y;
+} else {
+    slope = 1;
+    Bound = 1;
+}
 
 float interx = Bound/(divxy-slope);
 float intery = interx*divxy;
@@ -761,8 +774,21 @@ float angle = hcl.x;
 angle = angle - Roffset;
 angle = angle>1?angle - 1:angle<0?angle+1:angle;
 
-float slope = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.x : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.x : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.x : 1;
-float Bound = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.y : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.y : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.y: 1;
+float slope, Bound;
+
+if (angle > Gangle && angle <= Bangle) {
+    slope = RGBBoundaries.blue.x;
+    Bound = RGBBoundaries.blue.y;
+} else if (angle > Bangle || angle <= Rangle) {
+    slope = RGBBoundaries.green.x;
+    Bound = RGBBoundaries.green.y;
+} else if (angle > Rangle && angle <= Gangle) {
+    slope = RGBBoundaries.red.x;
+    Bound = RGBBoundaries.red.y;
+} else {
+    slope = 1;
+    Bound = 1;
+}
 
 angle = angle + Roffset;
 angle = angle>1?angle - 1:angle<0?angle+1:angle;
@@ -841,8 +867,21 @@ float angle = hcl.x;
 angle = angle - Roffset;
 angle = angle>1?angle - 1:angle<0?angle+1:angle;
 
-float slope = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.x : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.x : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.x : 1;
-float Bound = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.y : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.y : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.y: 1;
+float slope, Bound;
+
+if (angle > Gangle && angle <= Bangle) {
+    slope = RGBBoundaries.blue.x;
+    Bound = RGBBoundaries.blue.y;
+} else if (angle > Bangle || angle <= Rangle) {
+    slope = RGBBoundaries.green.x;
+    Bound = RGBBoundaries.green.y;
+} else if (angle > Rangle && angle <= Gangle) {
+    slope = RGBBoundaries.red.x;
+    Bound = RGBBoundaries.red.y;
+} else {
+    slope = 1;
+    Bound = 1;
+}
 
 angle = angle + Roffset;
 angle = angle>1?angle - 1:angle<0?angle+1:angle;
