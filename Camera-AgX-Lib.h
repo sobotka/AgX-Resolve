@@ -4,8 +4,6 @@
       This was originally from Jed smith, but I added math functions for my DCTLS
 */
 
-
-
 /* ##########################################################################
     Constants
     ---------------------------
@@ -14,8 +12,6 @@
 __CONSTANT__ float pi = 3.14159265358979323846f;
 __CONSTANT__ float pi2 = 1.57079632679489661923f;
 __CONSTANT__ float pi4 = 0.785398163397448309616f;
-
-
 
 /* ##########################################################################
     Custom Structs
@@ -38,13 +34,10 @@ typedef struct {
   float2 red; float2 green; float2 blue; float2 white;
 } Chromaticities;
 
-
-
 /* ##########################################################################
     Color Conversion Matrices
     ---------------------------
 */
-
 
 // Gamut conversion Matrices
 //AP0, AP1 and P3D60 was changed to D65
@@ -110,14 +103,11 @@ __CONSTANT__ Chromaticities BLACKMAGICWG_PRI =
 __CONSTANT__ Chromaticities CANONCINEMA_PRI =
 { {0.7400000016535166f, 0.27000000186020623f}, {0.17000000222850284f, 1.1400000018352379f}, {0.07999999816658841f, -0.09999999770823552f}, {0.3127f, 0.329f} };
 
-
-
 /* Matrix for conversion from CIE 1931 XYZ tristumulus to CIE 2006 LMS or "Truelight LMS", described in:
-    "Chromaticity Coordinates for Graphic Arts Based on CIE 2006 LMS with Even Spacing of Munsell Colours" by Richard Kirk
-    https://doi.org/10.2352/issn.2169-2629.2019.27.38
+  "Chromaticity Coordinates for Graphic Arts Based on CIE 2006 LMS with Even Spacing of Munsell Colours" by Richard Kirk
+  https://doi.org/10.2352/issn.2169-2629.2019.27.38
 */
 #define matrix_xyz_to_truelightlms make_float3x3(make_float3(0.257085f, 0.859943f, -0.031061f), make_float3(-0.394427, 1.175800f, 0.106423f), make_float3(0.064856f, -0.07625f, 0.559067f))
-
 
 // Whitepoint scaling factors for Truelight LMS
 // eg: (1, 1, 1) in RGB (D65 whitepoint) -> XYZ -> TLMS /= catd65 *= catd55 -> XYZ -> Yxy == D65 white
@@ -151,7 +141,8 @@ __DEVICE__ float3 clampf3(float3 a, float mn, float mx) {
   return make_float3(
     _fminf(_fmaxf(a.x, mn), mx),
     _fminf(_fmaxf(a.y, mn), mx),
-    _fminf(_fmaxf(a.z, mn), mx));
+    _fminf(_fmaxf(a.z, mn), mx)
+  );
 }
 
 __DEVICE__ float3 maxf3(float b, float3 a) {
@@ -163,7 +154,6 @@ __DEVICE__ float3 minf3(float b, float3 a) {
   // For each component of float3 a, return min of component and float b
   return make_float3(_fminf(a.x, b), _fminf(a.y, b), _fminf(a.z, b));
 }
-
 
 __DEVICE__ float _sign(float x) {
   // Return the sign of float x
@@ -180,9 +170,8 @@ __DEVICE__ float3 powf3(float3 a, float b) {
 __DEVICE__ float spowf(float a, float b) {
   // Compute "safe" power of float a, reflected over the origin
 
-    a=_sign(a)*_powf(_fabs(a), b);
-    return a;
-
+  a=_sign(a)*_powf(_fabs(a), b);
+  return a;
 }
 
 __DEVICE__ float3 spowf3(float3 a, float b) {
@@ -190,7 +179,8 @@ __DEVICE__ float3 spowf3(float3 a, float b) {
   return make_float3(
     _sign(a.x)*_powf(_fabs(a.x), b),
     _sign(a.y)*_powf(_fabs(a.y), b),
-    _sign(a.z)*_powf(_fabs(a.z), b));
+    _sign(a.z)*_powf(_fabs(a.z), b)
+  );
 }
 
 __DEVICE__ float _mixf(float a, float b, float f) {
@@ -214,7 +204,6 @@ __DEVICE__ float3 _smoothstepf3(float e0, float e1, float3 x) {
   return make_float3(_smoothstepf(e0, e1, x.x), _smoothstepf(e0, e1, x.y), _smoothstepf(e0, e1, x.z));
 }
 
-
 __DEVICE__ float chroma(float3 rgb, int norm) {
   // Calculate and return classical chroma. If norm, normalize by mx
   float mx = _fmaxf(rgb.x, _fmaxf(rgb.y, rgb.z));
@@ -223,7 +212,6 @@ __DEVICE__ float chroma(float3 rgb, int norm) {
   if (norm == 1) ch = mx == 0.0f ? 0.0f : ch / mx;
   return ch;
 }
-
 
 __DEVICE__ float hue(float3 rgb) {
   // Calculate and return hue in degrees between 0 and 6
@@ -238,7 +226,6 @@ __DEVICE__ float hue(float3 rgb) {
   return h;
 }
 
-
 // Helper function to create a float3x3
 __DEVICE__ float3x3 make_float3x3(float3 a, float3 b, float3 c) {
   float3x3 d;
@@ -246,18 +233,14 @@ __DEVICE__ float3x3 make_float3x3(float3 a, float3 b, float3 c) {
   return d;
 }
 
-
 // Multiply float3 vector a and 3x3 matrix m
 __DEVICE__ float3 mult_f3_f33(float3 a, float3x3 m) {
   return make_float3(
     m.x.x * a.x + m.x.y * a.y + m.x.z * a.z,
     m.y.x * a.x + m.y.y * a.y + m.y.z * a.z,
-    m.z.x * a.x + m.z.y * a.y + m.z.z * a.z);
+    m.z.x * a.x + m.z.y * a.y + m.z.z * a.z
+  );
 }
-
-
-
-
 
 // Calculate inverse of 3x3 matrix: https://stackoverflow.com/questions/983999/simple-3x3-matrix-inverse-code-c
 __DEVICE__ float3x3 inv_f33(float3x3 m) {
@@ -279,90 +262,93 @@ __DEVICE__ float3x3 inv_f33(float3x3 m) {
 }
 
 __DEVICE__ float3x3 transpose_f33( float3x3 A) {
+  float3x3 B = A;
+  A.x=make_float3(B.x.x,B.y.x,B.z.x);
+  A.y=make_float3(B.x.y,B.y.y,B.z.y);
+  A.z=make_float3(B.x.z,B.y.z,B.z.z);
 
-float3x3 B = A;
-A.x=make_float3(B.x.x,B.y.x,B.z.x);
-A.y=make_float3(B.x.y,B.y.y,B.z.y);
-A.z=make_float3(B.x.z,B.y.z,B.z.z);
-
-return A;
-
+  return A;
 }
 
 __DEVICE__ float3x3 mult_f33_f33( float3x3 A, float3x3 B) {
-A = transpose_f33(A);
-float3x3 C = B;
-B.x= mult_f3_f33(A.x,C);
-B.y= mult_f3_f33(A.y,C);
-B.z= mult_f3_f33(A.z,C);
-B = transpose_f33(B);
+  A = transpose_f33(A);
+  float3x3 C = B;
+  B.x= mult_f3_f33(A.x,C);
+  B.y= mult_f3_f33(A.y,C);
+  B.z= mult_f3_f33(A.z,C);
+  B = transpose_f33(B);
 
-return B;
-
+  return B;
 }
 
-
-
-
-
 __DEVICE__ float3x3 RGBtoXYZ( Chromaticities N) {
-
-float3x3 M = make_float3x3(make_float3(N.red.x/N.red.y,N.green.x/N.green.y,N.blue.x/N.blue.y),
-make_float3(1.0,1.0,1.0), make_float3((1-N.red.x-N.red.y)/N.red.y,(1-N.green.x-N.green.y)/N.green.y,(1-N.blue.x-N.blue.y)/N.blue.y));
-float3 wh = make_float3(N.white.x/N.white.y,1,(1-N.white.x-N.white.y)/N.white.y);
-wh = mult_f3_f33(wh, inv_f33(M));
-M = make_float3x3(make_float3(M.x.x*wh.x , M.x.y*wh.y , M.x.z*wh.z),
-make_float3(M.y.x*wh.x , M.y.y*wh.y ,M.y.z*wh.z), make_float3(M.z.x*wh.x,M.z.y*wh.y,M.z.z*wh.z));
-return M;
-
+  float3x3 M = make_float3x3(
+    make_float3(N.red.x/N.red.y, N.green.x / N.green.y, N.blue.x / N.blue.y),
+    make_float3(1.0, 1.0, 1.0),
+    make_float3(
+      (1-N.red.x-N.red.y) / N.red.y, (1-N.green.x-N.green.y) / N.green.y, (1-N.blue.x-N.blue.y)/N.blue.y
+    )
+  );
+  float3 wh = make_float3(
+    N.white.x / N.white.y, 1.0, (1-N.white.x-N.white.y) / N.white.y
+  );
+  wh = mult_f3_f33(wh, inv_f33(M));
+  M = make_float3x3(
+    make_float3(M.x.x*wh.x , M.x.y*wh.y , M.x.z*wh.z),
+    make_float3(M.y.x*wh.x, M.y.y*wh.y, M.y.z*wh.z),
+    make_float3(M.z.x*wh.x,M.z.y*wh.y,M.z.z*wh.z)
+  );
+  return M;
 }
 
 __DEVICE__ float3x3 XYZtoRGB( Chromaticities N) {
-float3x3 M = inv_f33(RGBtoXYZ(N));
-return M;
+  float3x3 M = inv_f33(RGBtoXYZ(N));
+  return M;
 }
 
-
-
-
 __DEVICE__ Chromaticities Insetcalc(Chromaticities N,float cpr,float cpg,float cpb){
-
-  float3 scale = make_float3(1/_powf(1-cpr,2),1/_powf(1-cpg,2),1/_powf(1-cpb,2));
+  float3 scale = make_float3(
+    1.0 / _powf(1.0 - cpr, 2.0),
+    1.0 / _powf(1.0 - cpg, 2.0),
+    1.0 / _powf(1.0 - cpb, 2.0)
+  );
 
   Chromaticities adj = make_chromaticities(
-    make_float2((N.red.x-N.white.x)*scale.x+N.white.x,(N.red.y-N.white.y)*scale.x+N.white.y),
-    make_float2((N.green.x-N.white.x)*scale.y+N.white.x,(N.green.y-N.white.y)*scale.y+N.white.y),
-    make_float2((N.blue.x-N.white.x)*scale.z+N.white.x,(N.blue.y-N.white.y)*scale.z+N.white.y),make_float2(N.white.x,N.white.y)
+    make_float2(
+      (N.red.x - N.white.x) * scale.x + N.white.x,
+      (N.red.y-N.white.y) * scale.x + N.white.y
+    ),
+    make_float2(
+      (N.green.x - N.white.x) * scale.y + N.white.x,
+      (N.green.y - N.white.y) * scale.y + N.white.y
+    ),
+    make_float2(
+      (N.blue.x - N.white.x) * scale.z + N.white.x,
+      (N.blue.y - N.white.y) * scale.z + N.white.y
+    ),
+    make_float2(N.white.x, N.white.y)
   );
 
   return adj;
-
 }
 
-
-
-
-
 __DEVICE__ float3x3 Insetcalcmatrix(Chromaticities N,float cpr,float cpg,float cpb){
+  float3 scale = make_float3(1/_powf(1-cpr,2),1/_powf(1-cpg,2),1/_powf(1-cpb,2));
 
-    float3 scale = make_float3(1/_powf(1-cpr,2),1/_powf(1-cpg,2),1/_powf(1-cpb,2));
+  Chromaticities adj = make_chromaticities(make_float2((N.red.x-N.white.x)*scale.x+N.white.x,(N.red.y-N.white.y)*scale.x+N.white.y),
+      make_float2((N.green.x-N.white.x)*scale.y+N.white.x,(N.green.y-N.white.y)*scale.y+N.white.y),
+      make_float2((N.blue.x-N.white.x)*scale.z+N.white.x,(N.blue.y-N.white.y)*scale.z+N.white.y),make_float2(N.white.x,N.white.y));
 
-    Chromaticities adj = make_chromaticities(make_float2((N.red.x-N.white.x)*scale.x+N.white.x,(N.red.y-N.white.y)*scale.x+N.white.y),
-        make_float2((N.green.x-N.white.x)*scale.y+N.white.x,(N.green.y-N.white.y)*scale.y+N.white.y),
-        make_float2((N.blue.x-N.white.x)*scale.z+N.white.x,(N.blue.y-N.white.y)*scale.z+N.white.y),make_float2(N.white.x,N.white.y));
+  float3x3 In2XYZ = RGBtoXYZ(N);
+  float3x3 XYZ2Adj = XYZtoRGB(adj);
 
-    float3x3 In2XYZ = RGBtoXYZ(N);
-    float3x3 XYZ2Adj = XYZtoRGB(adj);
+  float3x3 RGBtoAdj = mult_f33_f33(In2XYZ,XYZ2Adj);
 
-    float3x3 RGBtoAdj = mult_f33_f33(In2XYZ,XYZ2Adj);
-
-    return RGBtoAdj;
-
+  return RGBtoAdj;
 }
 
 __DEVICE__ Chromaticities RotatePrimaries(Chromaticities N,float ored,float og,float ob)
 {
-
   ored = _radians(ored);
   og =_radians(og);
   ob = _radians(ob);
@@ -380,122 +366,99 @@ __DEVICE__ Chromaticities RotatePrimaries(Chromaticities N,float ored,float og,f
   Nout.blue.y=Nout.blue.y+N.white.y;
 
   return Nout;
-
 }
 
-
 __DEVICE__ Chromaticities Primaries2Moment(Chromaticities N){
+  float2 momr = make_float2((N.red.x-N.white.x)/N.red.y,(N.red.y-N.white.y)/N.red.y);
+  float2 momg = make_float2((N.green.x-N.white.x)/N.green.y,(N.green.y-N.white.y)/N.green.y);
+  float2 momb = make_float2((N.blue.x-N.white.x)/N.blue.y,(N.blue.y-N.white.y)/N.blue.y);
 
-float2 momr = make_float2((N.red.x-N.white.x)/N.red.y,(N.red.y-N.white.y)/N.red.y);
-float2 momg = make_float2((N.green.x-N.white.x)/N.green.y,(N.green.y-N.white.y)/N.green.y);
-float2 momb = make_float2((N.blue.x-N.white.x)/N.blue.y,(N.blue.y-N.white.y)/N.blue.y);
+  Chromaticities M = make_chromaticities(momr,momg,momb,N.white);
 
-Chromaticities M = make_chromaticities(momr,momg,momb,N.white);
-
-return M;
-
+  return M;
 }
 
 __DEVICE__ Chromaticities CenterPrimaries(Chromaticities N){
+  N.red.x = N.red.x-N.white.x;
+  N.red.y = N.red.y-N.white.y;
+  N.green.x = N.green.x-N.white.x;
+  N.green.y = N.green.y-N.white.y;
+  N.blue.x = N.blue.x-N.white.x;
+  N.blue.y = N.blue.y-N.white.y;
 
-
-N.red.x = N.red.x-N.white.x;
-N.red.y = N.red.y-N.white.y;
-N.green.x = N.green.x-N.white.x;
-N.green.y = N.green.y-N.white.y;
-N.blue.x = N.blue.x-N.white.x;
-N.blue.y = N.blue.y-N.white.y;
-
-return N;
-
+  return N;
 }
 
 __DEVICE__ Chromaticities DeCenterPrimaries(Chromaticities N){
+  N.red.x = N.red.x+N.white.x;
+  N.red.y = N.red.y+N.white.y;
+  N.green.x = N.green.x+N.white.x;
+  N.green.y = N.green.y+N.white.y;
+  N.blue.x = N.blue.x+N.white.x;
+  N.blue.y = N.blue.y+N.white.y;
 
-
-N.red.x = N.red.x+N.white.x;
-N.red.y = N.red.y+N.white.y;
-N.green.x = N.green.x+N.white.x;
-N.green.y = N.green.y+N.white.y;
-N.blue.x = N.blue.x+N.white.x;
-N.blue.y = N.blue.y+N.white.y;
-
-return N;
-
+  return N;
 }
 
-
 __DEVICE__ Chromaticities ScalePrim(Chromaticities N,float rs,float gs,float bs){
+  N = CenterPrimaries(N);
 
-    N = CenterPrimaries(N);
+  N.red = make_float2(N.red.x*rs,N.red.y*rs);
+  N.green = make_float2(N.green.x*gs,N.green.y*gs);
+  N.blue = make_float2(N.blue.x*bs,N.blue.y*bs);
 
-    N.red = make_float2(N.red.x*rs,N.red.y*rs);
-    N.green = make_float2(N.green.x*gs,N.green.y*gs);
-    N.blue = make_float2(N.blue.x*bs,N.blue.y*bs);
+  N = DeCenterPrimaries(N);
 
-    N = DeCenterPrimaries(N);
-
-    return N;
-
+  return N;
 }
 
 __DEVICE__ float2 cartesian_to_polar2(float2 a) {
-
-    float2 b = a;
-    b.y = _atan2f(a.y,a.x);
+  float2 b = a;
+  b.y = _atan2f(a.y,a.x);
 
   return make_float2(_sqrtf(a.x*a.x+ a.y*a.y),b.y);
 }
-
 
 __DEVICE__ float2 polar_to_cartesian2(float2 a) {
 
   return make_float2(a.x * _cosf(a.y), a.x * _sinf(a.y));
 }
 
-
 __DEVICE__ Chromaticities RotatePrimary(Chromaticities N,float rrot,float grot,float brot){
+  //rotatation parameter excepted in degrees, but internally transformed to radians
 
-//rotatation parameter excepted in degrees, but internally transformed to radians
+  N = CenterPrimaries(N);
+  N.red = cartesian_to_polar2(N.red);
+  N.green = cartesian_to_polar2(N.green);
+  N.blue = cartesian_to_polar2(N.blue);
 
-    N = CenterPrimaries(N);
-    N.red = cartesian_to_polar2(N.red);
-    N.green = cartesian_to_polar2(N.green);
-    N.blue = cartesian_to_polar2(N.blue);
+  rrot = _radians(rrot);
+  grot = _radians(grot);
+  brot = _radians(brot);
 
-    rrot = _radians(rrot);
-    grot = _radians(grot);
-    brot = _radians(brot);
+  N.red.y = N.red.y + rrot;
+  N.green.y = N.green.y + grot;
+  N.blue.y = N.blue.y + brot;
 
-    N.red.y = N.red.y + rrot;
-    N.green.y = N.green.y + grot;
-    N.blue.y = N.blue.y + brot;
+  N.red = polar_to_cartesian2(N.red);
+  N.green = polar_to_cartesian2(N.green);
+  N.blue = polar_to_cartesian2(N.blue);
 
-    N.red = polar_to_cartesian2(N.red);
-    N.green = polar_to_cartesian2(N.green);
-    N.blue = polar_to_cartesian2(N.blue);
+  N = DeCenterPrimaries(N);
 
-    N = DeCenterPrimaries(N);
-
-    return N;
-
+  return N;
 }
 
 __DEVICE__ float2 Line_equation (float2 a,float2 b){
+  float m = (b.y-a.y)/(b.x - a.x);
+  float c = a.y - m*a.x;
 
-    float m = (b.y-a.y)/(b.x - a.x);
-    float c = a.y - m*a.x;
+  float2 line = make_float2(m,c);
 
-    float2 line = make_float2(m,c);
-
-    return line;
-
+  return line;
 }
 
-
-
 __DEVICE__ Chromaticities PrimariesLines(Chromaticities N){
-
     Chromaticities M = N;
 
     N.red = Line_equation(M.red,M.white);
@@ -503,40 +466,30 @@ __DEVICE__ Chromaticities PrimariesLines(Chromaticities N){
     N.blue = Line_equation(M.blue,M.white);
 
     return N;
-
 }
 
 __DEVICE__ Chromaticities Polygon(Chromaticities N){
+  Chromaticities M = N;
 
+  N.red = Line_equation(M.red,M.green);
+  N.green = Line_equation(M.red,M.blue);
+  N.blue = Line_equation(M.blue,M.green);
 
-    Chromaticities M = N;
-
-    N.red = Line_equation(M.red,M.green);
-    N.green = Line_equation(M.red,M.blue);
-    N.blue = Line_equation(M.blue,M.green);
-
-    return N;
-
-
+  return N;
 }
 
-
 __DEVICE__ float2 intersection(float2 a,float2 b){
+  //Calculate the xy coordinates where 2 lines intersect
+  float2 c = a;
+  float2 d = b;
 
-//Calculate the xy coordinates where 2 lines intersect
+  a.x = (d.y-c.y)/(c.x-d.x);
+  a.y = a.x*c.x+c.y;
 
-    float2 c = a;
-    float2 d = b;
-
-    a.x = (d.y-c.y)/(c.x-d.x);
-    a.y = a.x*c.x+c.y;
-
-    return a;
-
+  return a;
 }
 
 __DEVICE__ Chromaticities InsetPrimaries(Chromaticities N,float cpr,float cpg,float cpb,float ored,float og,float ob){
-
   Chromaticities M = N;
   N = ScalePrim(N, 2.0, 2.0, 2.0);
 
@@ -563,320 +516,66 @@ __DEVICE__ Chromaticities InsetPrimaries(Chromaticities N,float cpr,float cpg,fl
   return N;
 }
 
-
 __DEVICE__ Chromaticities MomentBoundary(Chromaticities N){
+  float2 momr = make_float2((N.red.x-N.white.x)/N.red.y,(N.red.y-N.white.y)/N.red.y);
+  float2 momg = make_float2((N.green.x-N.white.x)/N.green.y,(N.green.y-N.white.y)/N.green.y);
+  float2 momb = make_float2((N.blue.x-N.white.x)/N.blue.y,(N.blue.y-N.white.y)/N.blue.y);
 
-float2 momr = make_float2((N.red.x-N.white.x)/N.red.y,(N.red.y-N.white.y)/N.red.y);
-float2 momg = make_float2((N.green.x-N.white.x)/N.green.y,(N.green.y-N.white.y)/N.green.y);
-float2 momb = make_float2((N.blue.x-N.white.x)/N.blue.y,(N.blue.y-N.white.y)/N.blue.y);
+  float r2gslope = (momg.y-momr.y)/(momg.x-momr.x);
+  float r2gint = (momr.y-r2gslope*momr.x);
+  float r2bslope = (momb.y-momr.y)/(momb.x-momr.x);
+  float r2bint = (momr.y-r2bslope*momr.x);
+  float g2bslope = (momb.y-momg.y)/(momb.x-momg.x);
+  float g2bint = (momb.y-g2bslope*momb.x);
 
-float r2gslope = (momg.y-momr.y)/(momg.x-momr.x);
-float r2gint = (momr.y-r2gslope*momr.x);
-float r2bslope = (momb.y-momr.y)/(momb.x-momr.x);
-float r2bint = (momr.y-r2bslope*momr.x);
-float g2bslope = (momb.y-momg.y)/(momb.x-momg.x);
-float g2bint = (momb.y-g2bslope*momb.x);
-
-Chromaticities M = make_chromaticities(make_float2(r2gslope,r2gint),make_float2(r2bslope,r2bint),make_float2(g2bslope,g2bint),N.white);
+  Chromaticities M = make_chromaticities(make_float2(r2gslope,r2gint),make_float2(r2bslope,r2bint),make_float2(g2bslope,g2bint),N.white);
 
   return M;
 }
 
-
-
-
-
-
-
 __DEVICE__ float3x3 RGBtoRGB(Chromaticities N,Chromaticities M){
-
   float3x3 In2XYZ = RGBtoXYZ(N);
   float3x3 XYZ2Out = XYZtoRGB(M);
 
   float3x3 rgbtorgb = mult_f33_f33(In2XYZ,XYZ2Out);
 
   return rgbtorgb;
-
 }
 
 __DEVICE__ float3x3 InsetMatrix(Chromaticities N,float cpr,float cpg,float cpb,float oRed,float og,float ob){
-
   Chromaticities In = Insetcalc(N,cpr,cpg,cpb);
   In=RotatePrimaries(In,oRed,og,ob);
   float3x3 Matrix = RGBtoRGB(N,In);
 
   return Matrix;
-
-
 }
 
 __DEVICE__ float3 XYZ_2_xyY( float3 XYZ) {
-float3 xyY;
-//float divisor = (_fabs(XYZ.x) + _fabs(XYZ.y) + _fabs(XYZ.z));
-float divisor = ((XYZ.x) + XYZ.y + XYZ.z);
-//if (divisor == 0.0f) divisor = 1e-10f;
-xyY.x =divisor == 0.0f? 0.0f:(XYZ.x) / divisor;
-xyY.y = divisor == 0.0f? 0.0f:(XYZ.y)/ divisor;
-//xyY.z = _fabs(XYZ.y);
-xyY.z = XYZ.y;
-return xyY;
+  float3 xyY;
+  //float divisor = (_fabs(XYZ.x) + _fabs(XYZ.y) + _fabs(XYZ.z));
+  float divisor = ((XYZ.x) + XYZ.y + XYZ.z);
+  //if (divisor == 0.0f) divisor = 1e-10f;
+  xyY.x =divisor == 0.0f? 0.0f:(XYZ.x) / divisor;
+  xyY.y = divisor == 0.0f? 0.0f:(XYZ.y)/ divisor;
+  //xyY.z = _fabs(XYZ.y);
+  xyY.z = XYZ.y;
+  return xyY;
 }
 
 __DEVICE__ float3 xyY_2_XYZ( float3 xyY) {
-float3 XYZ;
-//XYZ.x = xyY.x * xyY.z / _fmaxf( xyY.y, 1e-10f);
-XYZ.x = xyY.y==0.0f? 0.0f: xyY.x * xyY.z / xyY.y;
-XYZ.y = xyY.z;
-//XYZ.z = (1.0f - xyY.x - xyY.y) * xyY.z / _fmaxf( xyY.y, 1e-10f);
-XYZ.z = xyY.y==0.0f? 0.0f: (1.0f - xyY.x - xyY.y) * xyY.z /( xyY.y);
-return XYZ;
+  float3 XYZ;
+  //XYZ.x = xyY.x * xyY.z / _fmaxf( xyY.y, 1e-10f);
+  XYZ.x = xyY.y==0.0f? 0.0f: xyY.x * xyY.z / xyY.y;
+  XYZ.y = xyY.z;
+  //XYZ.z = (1.0f - xyY.x - xyY.y) * xyY.z / _fmaxf( xyY.y, 1e-10f);
+  XYZ.z = xyY.y==0.0f? 0.0f: (1.0f - xyY.x - xyY.y) * xyY.z /( xyY.y);
+  return XYZ;
 }
-
-
-__DEVICE__ float3 RGB2HCL(Chromaticities Ingamut,float3 rgb){
-
-Chromaticities RGBBoundaries = MomentBoundary(Ingamut);
-
-float2 Gxy = make_float2(((-RGBBoundaries.blue.y + RGBBoundaries.red.y)/(-RGBBoundaries.red.x + RGBBoundaries.blue.x)),
-  ((RGBBoundaries.blue.x*RGBBoundaries.red.y-RGBBoundaries.blue.y*RGBBoundaries.red.x)/(-RGBBoundaries.red.x+RGBBoundaries.blue.x)));
-float2 Rxy = make_float2(((-RGBBoundaries.red.y + RGBBoundaries.green.y)/(-RGBBoundaries.green.x + RGBBoundaries.red.x)),
-  ((RGBBoundaries.red.x*RGBBoundaries.green.y-RGBBoundaries.red.y*RGBBoundaries.green.x)/(-RGBBoundaries.green.x+RGBBoundaries.red.x)));
-float2 Bxy = make_float2(((-RGBBoundaries.blue.y + RGBBoundaries.green.y)/(-RGBBoundaries.green.x + RGBBoundaries.blue.x)),
-  ((RGBBoundaries.blue.x*RGBBoundaries.green.y-RGBBoundaries.blue.y*RGBBoundaries.green.x)/(-RGBBoundaries.green.x+RGBBoundaries.blue.x)));
-
-
-float Gangle = _atan2f(Gxy.y,Gxy.x)<0?_atan2f(Gxy.y,Gxy.x)/(2*pi)+ 1:_atan2f(Gxy.y,Gxy.x)/(2*pi);
-float Rangle = _atan2f(Rxy.y,Rxy.x)<0?_atan2f(Rxy.y,Rxy.x)/(2*pi)+ 1:_atan2f(Rxy.y,Rxy.x)/(2*pi);
-float Bangle = _atan2f(Bxy.y,Bxy.x)<0?_atan2f(Bxy.y,Bxy.x)/(2*pi)+ 1:_atan2f(Bxy.y,Bxy.x)/(2*pi);
-
-float Roffset = Rangle;
-
-
-Rangle = Rangle - Roffset;
-Gangle = Gangle - Roffset;
-Gangle = Gangle<0?Gangle+1:Gangle;
-Bangle = Bangle - Roffset;
-Bangle = Bangle<0?Bangle+1:Bangle;
-float2 whitepoint = Ingamut.white;
-float3x3 In2XYZ = RGBtoXYZ(Ingamut);
-// float3x3 XYZ2In = inv_f33(In2XYZ);
-
-float3 XYZ = mult_f3_f33(rgb,In2XYZ);
-
-
-float fakeneg = _fmaxf(_fmaxf(XYZ.x,XYZ.y),XYZ.z);
-
-XYZ = fakeneg<=0.0f?make_float3(0.0f,0.0f,0.0f):XYZ;
-
-
-
-
-
-
-XYZ = XYZ_2_xyY(XYZ);
-//float3 xyY = XYZ;
-
-
-float3 XYZin = XYZ;
-
-
-//Calculate Moment
-//XYZin.y = XYZin.y == 0.0f ? 1e-10f : XYZin.y;
-
-float cysign = _sign(XYZ.z);
-
-XYZ.x = XYZ.y == 0.0f?0.0:(XYZin.x-whitepoint.x)/(XYZin.y);
-XYZ.y =  XYZ.y == 0.0f?0.0:(XYZin.y-whitepoint.y)/(XYZin.y);
-XYZ.x = cysign*XYZ.x;
-XYZ.y = cysign*XYZ.y;
-XYZ.z = XYZin.z;
-
-float divxy = XYZ.x == 0.0?0.0: XYZ.y/XYZ.x;
-float angle =  _atan2f(XYZ.y,XYZ.x)/(2*pi);
-angle = rgb.x == rgb.y && rgb.y == rgb.z ? 0 : angle;
-angle = angle<0.0f?angle + 1:angle;
-angle = XYZ.x ==0.0f? 0.0f:angle;
-angle = angle - Roffset;
-angle = angle>1?angle - 1:angle<0?angle+1:angle;
-
-float slope = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.x : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.x : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.x : 1;
-float Bound = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.y : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.y : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.y: 1;
-
-float interx = Bound/(divxy-slope);
-float intery = interx*divxy;
-
-float Cin = _sqrtf(XYZ.x * XYZ.x + XYZ.y * XYZ.y);
-float Cnorm = _sqrtf(interx * interx + intery * intery);
-
-Cin = Cnorm ==0?0: Cin/Cnorm;
-angle = angle + Roffset;
-angle = angle>1?angle - 1:angle<0?angle+1:angle;
-angle = Cin == 0.0? 0.0:angle;
-
-
-float3 Out = make_float3(angle,Cin,XYZ.z);
-
-  return Out;
-
-
-}
-
-
-
-__DEVICE__ float3 HCL2RGB(Chromaticities Ingamut,float3 hcl){
-
-Chromaticities RGBBoundaries = MomentBoundary(Ingamut);
-
-//Find slope and intercept between each primary
-
-float2 Rxy = make_float2(((-RGBBoundaries.red.y + RGBBoundaries.green.y)/(-RGBBoundaries.green.x + RGBBoundaries.red.x)),
-  ((RGBBoundaries.red.x*RGBBoundaries.green.y-RGBBoundaries.red.y*RGBBoundaries.green.x)/(-RGBBoundaries.green.x+RGBBoundaries.red.x)));
-float2 Gxy = make_float2(((-RGBBoundaries.blue.y + RGBBoundaries.red.y)/(-RGBBoundaries.red.x + RGBBoundaries.blue.x)),
-  ((RGBBoundaries.blue.x*RGBBoundaries.red.y-RGBBoundaries.blue.y*RGBBoundaries.red.x)/(-RGBBoundaries.red.x+RGBBoundaries.blue.x)));
-float2 Bxy = make_float2(((-RGBBoundaries.blue.y + RGBBoundaries.green.y)/(-RGBBoundaries.green.x + RGBBoundaries.blue.x)),
-  ((RGBBoundaries.blue.x*RGBBoundaries.green.y-RGBBoundaries.blue.y*RGBBoundaries.green.x)/(-RGBBoundaries.green.x+RGBBoundaries.blue.x)));
-
-float Rangle = _atan2f(Rxy.y,Rxy.x)<0?_atan2f(Rxy.y,Rxy.x)/(2*pi)+ 1:_atan2f(Rxy.y,Rxy.x)/(2*pi);
-float Gangle = _atan2f(Gxy.y,Gxy.x)<0?_atan2f(Gxy.y,Gxy.x)/(2*pi)+ 1:_atan2f(Gxy.y,Gxy.x)/(2*pi);
-float Bangle = _atan2f(Bxy.y,Bxy.x)<0?_atan2f(Bxy.y,Bxy.x)/(2*pi)+ 1:_atan2f(Bxy.y,Bxy.x)/(2*pi);
-
-
-float Roffset = Rangle;
-
-Rangle = Rangle - Roffset;
-Gangle = Gangle - Roffset;
-Bangle = Bangle - Roffset;
-
-Gangle = Gangle<0?Gangle+1:Gangle;
-Bangle = Bangle<0?Bangle+1:Bangle;
-
-
-float2 whitepoint = Ingamut.white;
-
-float3x3 In2XYZ = RGBtoXYZ(Ingamut);
-float3x3 XYZ2In = inv_f33(In2XYZ);
-
-
-float angle = hcl.x;
-angle = angle - Roffset;
-angle = angle>1?angle - 1:angle<0?angle+1:angle;
-
-float slope = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.x : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.x : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.x : 1;
-float Bound = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.y : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.y : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.y: 1;
-
-angle = angle + Roffset;
-angle = angle>1?angle - 1:angle<0?angle+1:angle;
-angle = angle*2*pi;
-
-float chroma = hcl.y;
-hcl.x = _cosf(angle);
-hcl.y = _sinf(angle);
-
-float divxy = hcl.y/hcl.x;
-divxy = hcl.x == 0.0f ? 0.0f :divxy;
-
-float interx = Bound/(divxy-slope);
-float intery = interx*divxy;
-
-float Cnorm = _sqrtf(interx * interx + intery * intery);
-chroma = chroma*Cnorm;
-
-
-float cx = hcl.x*chroma;
-float cy = hcl.y*chroma;
-
-float sy = whitepoint.y/(1-cy);
-float sx = whitepoint.x + cx*sy;
-
-float3 xyY = make_float3(sx,sy,hcl.z);
-
-float3 XYZ = xyY_2_XYZ(xyY);
-
-float3 RGB = mult_f3_f33(XYZ,XYZ2In);
-
-
-return RGB;
-
-
-}
-
-
-__DEVICE__ float3 HCL2HML(Chromaticities Ingamut,float3 hcl){
-
-
-
-Chromaticities RGBBoundaries = MomentBoundary(Ingamut);
-
-//Find slope and intercept between each primary
-
-float2 Rxy = make_float2(((-RGBBoundaries.red.y + RGBBoundaries.green.y)/(-RGBBoundaries.green.x + RGBBoundaries.red.x)),
-  ((RGBBoundaries.red.x*RGBBoundaries.green.y-RGBBoundaries.red.y*RGBBoundaries.green.x)/(-RGBBoundaries.green.x+RGBBoundaries.red.x)));
-float2 Gxy = make_float2(((-RGBBoundaries.blue.y + RGBBoundaries.red.y)/(-RGBBoundaries.red.x + RGBBoundaries.blue.x)),
-  ((RGBBoundaries.blue.x*RGBBoundaries.red.y-RGBBoundaries.blue.y*RGBBoundaries.red.x)/(-RGBBoundaries.red.x+RGBBoundaries.blue.x)));
-float2 Bxy = make_float2(((-RGBBoundaries.blue.y + RGBBoundaries.green.y)/(-RGBBoundaries.green.x + RGBBoundaries.blue.x)),
-  ((RGBBoundaries.blue.x*RGBBoundaries.green.y-RGBBoundaries.blue.y*RGBBoundaries.green.x)/(-RGBBoundaries.green.x+RGBBoundaries.blue.x)));
-
-float Rangle = _atan2f(Rxy.y,Rxy.x)<0?_atan2f(Rxy.y,Rxy.x)/(2*pi)+ 1:_atan2f(Rxy.y,Rxy.x)/(2*pi);
-float Gangle = _atan2f(Gxy.y,Gxy.x)<0?_atan2f(Gxy.y,Gxy.x)/(2*pi)+ 1:_atan2f(Gxy.y,Gxy.x)/(2*pi);
-float Bangle = _atan2f(Bxy.y,Bxy.x)<0?_atan2f(Bxy.y,Bxy.x)/(2*pi)+ 1:_atan2f(Bxy.y,Bxy.x)/(2*pi);
-
-
-float Roffset = Rangle;
-
-Rangle = Rangle - Roffset;
-Gangle = Gangle - Roffset;
-Bangle = Bangle - Roffset;
-
-Gangle = Gangle<0?Gangle+1:Gangle;
-Bangle = Bangle<0?Bangle+1:Bangle;
-
-
-//float2 whitepoint = Ingamut.white;
-
-float3x3 In2XYZ = RGBtoXYZ(Ingamut);
-float3x3 XYZ2In = inv_f33(In2XYZ);
-
-
-float angle = hcl.x;
-angle = angle - Roffset;
-angle = angle>1?angle - 1:angle<0?angle+1:angle;
-
-float slope = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.x : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.x : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.x : 1;
-float Bound = angle > Gangle && angle <= Bangle ? RGBBoundaries.blue.y : angle > Bangle or angle <= Rangle ? RGBBoundaries.green.y : angle > Rangle && angle <= Gangle ? RGBBoundaries.red.y: 1;
-
-angle = angle + Roffset;
-angle = angle>1?angle - 1:angle<0?angle+1:angle;
-angle = angle*2*pi;
-
-
-float chroma = hcl.y;
-hcl.x = _cosf(angle);
-hcl.y = _sinf(angle);
-
-float divxy = hcl.y/hcl.x;
-divxy = hcl.x == 0.0f ? 0.0f :divxy;
-
-float interx = Bound/(divxy-slope);
-float intery = interx*divxy;
-
-float Cnorm = _sqrtf(interx * interx + intery * intery);
-chroma = chroma*Cnorm;
-
-float3 RGB = make_float3(angle/(2*pi),chroma,hcl.z);
-
-
-return RGB;
-}
-
-
-
-
 
 /* ##########################################################################
     Transfer Functions
     ---------------------------------
 */
-
 
 __DEVICE__ float3 encode_inverse_EOTF(float3 rgb, float EOTF) {
   rgb.x = _powf(rgb.x, 1.0f / EOTF);
@@ -916,49 +615,43 @@ __DEVICE__ float3 lin2log(float3 rgb, int tf) {
     rgb.x = rgb.x < 0.005f ? rgb.x * 8.283605932402494f : 0.08692876065491224f * _log2f(rgb.x + 0.005494072432257808f) + 0.5300133392291939f;
     rgb.y = rgb.y < 0.005f ? rgb.y * 8.283605932402494f : 0.08692876065491224f * _log2f(rgb.y + 0.005494072432257808f) + 0.5300133392291939f;
     rgb.z = rgb.z < 0.005f ? rgb.z * 8.283605932402494f : 0.08692876065491224f * _log2f(rgb.z + 0.005494072432257808f) + 0.5300133392291939f;
-  }
-  else if (tf == 8) { // CanonLog3
+  } else if (tf == 8) { // CanonLog3
     rgb.x = rgb.x/0.9f ;
     rgb.y = rgb.y/0.9f ;
     rgb.z = rgb.z/0.9f ;
     rgb.x = rgb.x < -0.014f ? -0.36726845f * _log10f( 1.0f - 14.98325f * rgb.x ) + 0.12783901f: -0.014f <= rgb.x && rgb.x <= 0.014f?1.9754798f * rgb.x + 0.12512219f:0.36726845f * _log10f( 14.98325f * rgb.x + 1.0f ) + 0.12240537f;
     rgb.y = rgb.y < -0.014f ? -0.36726845f * _log10f( 1.0f - 14.98325f * rgb.y ) + 0.12783901f: -0.014f <= rgb.y && rgb.y <= 0.014f?1.9754798f * rgb.y + 0.12512219f:0.36726845f * _log10f( 14.98325f * rgb.y + 1.0f ) + 0.12240537f;
     rgb.z = rgb.z < -0.014f ? -0.36726845f * _log10f( 1.0f - 14.98325f * rgb.z ) + 0.12783901f: -0.014f <= rgb.z && rgb.z <= 0.014f?1.9754798f * rgb.z + 0.12512219f:0.36726845f * _log10f( 14.98325f * rgb.z + 1.0f ) + 0.12240537f;
-  }
-  else if (tf == 9){  // Arri LogC 4
-  const float a = (_powf(2.0f, 18.0f) - 16.0f) / 117.45f;
-  const float b = (1023.0f - 95.0f) / 1023.0f;
-  const float c = 95.0f / 1023.f;
-  const float s = (7.f * _logf(2.0f) * _powf(2.0f, 7.0f - 14.0f * c / b)) / (a * b);
-  const float t = (_powf(2.0f, 14.0f * ((-1.0f * c) / b) + 6.0f) - 64.0f) / a;
+  } else if (tf == 9){  // Arri LogC 4
+    const float a = (_powf(2.0f, 18.0f) - 16.0f) / 117.45f;
+    const float b = (1023.0f - 95.0f) / 1023.0f;
+    const float c = 95.0f / 1023.f;
+    const float s = (7.f * _logf(2.0f) * _powf(2.0f, 7.0f - 14.0f * c / b)) / (a * b);
+    const float t = (_powf(2.0f, 14.0f * ((-1.0f * c) / b) + 6.0f) - 64.0f) / a;
 
-
-  rgb.x = rgb.x >= t ? ((_log2f(a * rgb.x + 64.f) - 6.f) / 14.f) * b + c : (rgb.x - t) / s;
-  rgb.y = rgb.y >= t ? ((_log2f(a * rgb.y + 64.f) - 6.f) / 14.f) * b + c : (rgb.y - t) / s;
-  rgb.z = rgb.z >= t ? ((_log2f(a * rgb.z + 64.f) - 6.f) / 14.f) * b + c : (rgb.z - t) / s;
-
-  }
-  else if (tf == 10) { // CanonLog2
+    rgb.x = rgb.x >= t ? ((_log2f(a * rgb.x + 64.f) - 6.f) / 14.f) * b + c : (rgb.x - t) / s;
+    rgb.y = rgb.y >= t ? ((_log2f(a * rgb.y + 64.f) - 6.f) / 14.f) * b + c : (rgb.y - t) / s;
+    rgb.z = rgb.z >= t ? ((_log2f(a * rgb.z + 64.f) - 6.f) / 14.f) * b + c : (rgb.z - t) / s;
+  } else if (tf == 10) { // CanonLog2
     rgb.x = rgb.x/0.9f ;
     rgb.y = rgb.y/0.9f ;
     rgb.z = rgb.z/0.9f ;
     rgb.x = rgb.x<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.x ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.x + 1.0f ) + 0.092864125f;
     rgb.y = rgb.y<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.y ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.y + 1.0f ) + 0.092864125f;
     rgb.z = rgb.z<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.z ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.z + 1.0f ) + 0.092864125f;
-  }
-  else if (tf == 11){  // Flog2
-      const float a = 5.555556f;
-      const float b = 0.064829f;
-      const float c = 0.245281f;
-      const float d = 0.384316f;
-      const float e = 8.799461f;
-      const float f = 0.092864f;
-      const float cut1 = 0.000889f; // Should be equal to ((cut2 - f) / e)
-      //const float cut2 = 0.100686685370811f; // should be equal to (e * cut1 + f)
+  } else if (tf == 11){  // Flog2
+    const float a = 5.555556f;
+    const float b = 0.064829f;
+    const float c = 0.245281f;
+    const float d = 0.384316f;
+    const float e = 8.799461f;
+    const float f = 0.092864f;
+    const float cut1 = 0.000889f; // Should be equal to ((cut2 - f) / e)
+    //const float cut2 = 0.100686685370811f; // should be equal to (e * cut1 + f)
 
-      rgb.x = rgb.x>=cut1?(c * _log10f(a * rgb.x + b) + d):(e * rgb.x + f);
-      rgb.y = rgb.y>=cut1?(c * _log10f(a * rgb.y + b) + d):(e * rgb.y + f);
-      rgb.z = rgb.z>=cut1?(c * _log10f(a * rgb.z + b) + d):(e * rgb.z + f);
+    rgb.x = rgb.x>=cut1?(c * _log10f(a * rgb.x + b) + d):(e * rgb.x + f);
+    rgb.y = rgb.y>=cut1?(c * _log10f(a * rgb.y + b) + d):(e * rgb.y + f);
+    rgb.z = rgb.z>=cut1?(c * _log10f(a * rgb.z + b) + d):(e * rgb.z + f);
   }
   // else if (tf == 12) {
   //     // BMFilm Placeholder
@@ -996,38 +689,31 @@ __DEVICE__ float3 log2lin(float3 rgb, int tf) {
     rgb.x = rgb.x < 0.13388378f ? (rgb.x - 0.09246575342465753f) / 8.283605932402494f : _expf((rgb.x - 0.5300133392291939f) / 0.08692876065491224f) - 0.005494072432257808f;
     rgb.y = rgb.y < 0.13388378f ? (rgb.y - 0.09246575342465753f) / 8.283605932402494f : _expf((rgb.y - 0.5300133392291939f) / 0.08692876065491224f) - 0.005494072432257808f;
     rgb.z = rgb.z < 0.13388378f ? (rgb.z - 0.09246575342465753f) / 8.283605932402494f : _expf((rgb.z - 0.5300133392291939f) / 0.08692876065491224f) - 0.005494072432257808f;
-  }
-  else if (tf == 8) { // CanonLog3
+  } else if (tf == 8) { // CanonLog3
     rgb.x = rgb.x < 0.097465473f ?-( _powf( 10.0f, ( 0.12783901f - rgb.x ) / 0.36726845f ) - 1.0f ) / 14.98325f : 0.097465473f <= rgb.x && rgb.x <= 0.15277891f?(rgb.x - 0.12512219f) / 1.9754798f:( _powf( 10.0f, ( rgb.x - 0.12240537f ) / 0.36726845f ) - 1.0f ) / 14.98325f;
     rgb.y = rgb.y < 0.097465473f ?-( _powf( 10.0f, ( 0.12783901f - rgb.y ) / 0.36726845f ) - 1.0f ) / 14.98325f : 0.097465473f <= rgb.y && rgb.y <= 0.15277891f?(rgb.y - 0.12512219f) / 1.9754798f:( _powf( 10.0f, ( rgb.y - 0.12240537f ) / 0.36726845f ) - 1.0f ) / 14.98325f;
     rgb.z = rgb.z < 0.097465473f ?-( _powf( 10.0f, ( 0.12783901f - rgb.z ) / 0.36726845f ) - 1.0f ) / 14.98325f : 0.097465473f <= rgb.z && rgb.z <= 0.15277891f?(rgb.z - 0.12512219f) / 1.9754798f:( _powf( 10.0f, ( rgb.z - 0.12240537f ) / 0.36726845f ) - 1.0f ) / 14.98325f;
     rgb.x = rgb.x*0.9f;
     rgb.y = rgb.y*0.9f;
     rgb.z = rgb.z*0.9f;
-  }
+  } else if (tf == 9){  // Arri LogC 4
+    const float a = (_powf(2.0f, 18.0f) - 16.0f) / 117.45f;
+    const float b = (1023.0f - 95.0f) / 1023.0f;
+    const float c = 95.0f / 1023.f;
+    const float s = (7.f * _logf(2.0f) * _powf(2.0f, 7.0f - 14.0f * c / b)) / (a * b);
+    const float t = (_powf(2.0f, 14.0f * ((-1.0f * c) / b) + 6.0f) - 64.0f) / a;
 
-  else if (tf == 9){  // Arri LogC 4
-  const float a = (_powf(2.0f, 18.0f) - 16.0f) / 117.45f;
-  const float b = (1023.0f - 95.0f) / 1023.0f;
-  const float c = 95.0f / 1023.f;
-  const float s = (7.f * _logf(2.0f) * _powf(2.0f, 7.0f - 14.0f * c / b)) / (a * b);
-  const float t = (_powf(2.0f, 14.0f * ((-1.0f * c) / b) + 6.0f) - 64.0f) / a;
-
-  rgb.x = rgb.x < 0.0f ? rgb.x * s + t : (_powf(2.0f, (14.0f * (rgb.x - c) / b + 6.0f)) - 64.0f) / a;
-  rgb.y = rgb.y < 0.0f ? rgb.y * s + t : (_powf(2.0f, (14.0f * (rgb.y - c) / b + 6.0f)) - 64.0f) / a;
-  rgb.z = rgb.z < 0.0f ? rgb.z * s + t : (_powf(2.0f, (14.0f * (rgb.z - c) / b + 6.0f)) - 64.0f) / a;
-  }
-
-  else if (tf == 10){ //PureLog2 -10 stop under 0.18 and 6.5 over
+    rgb.x = rgb.x < 0.0f ? rgb.x * s + t : (_powf(2.0f, (14.0f * (rgb.x - c) / b + 6.0f)) - 64.0f) / a;
+    rgb.y = rgb.y < 0.0f ? rgb.y * s + t : (_powf(2.0f, (14.0f * (rgb.y - c) / b + 6.0f)) - 64.0f) / a;
+    rgb.z = rgb.z < 0.0f ? rgb.z * s + t : (_powf(2.0f, (14.0f * (rgb.z - c) / b + 6.0f)) - 64.0f) / a;
+  } else if (tf == 10){ //PureLog2 -10 stop under 0.18 and 6.5 over
     float mx = 6.5;
     float mn = -10;
 
     rgb.x = 0.18*_powf(2,(rgb.x*(mx-mn)+mn));
     rgb.y = 0.18*_powf(2,(rgb.y*(mx-mn)+mn));
     rgb.z = 0.18*_powf(2,(rgb.z*(mx-mn)+mn));
-
-  }
-  else if (tf == 11){  // Flog2
+  } else if (tf == 11){  // Flog2
     const float a = 5.555556f;
     const float b = 0.064829f;
     const float c = 0.245281f;
@@ -1040,8 +726,7 @@ __DEVICE__ float3 log2lin(float3 rgb, int tf) {
     rgb.x = rgb.x>=cut2?((_exp10f((rgb.x - d) / c) - b) / a):((rgb.x - f) / e);
     rgb.y = rgb.y>=cut2?((_exp10f((rgb.y - d) / c) - b) / a):((rgb.y - f) / e);
     rgb.z = rgb.z>=cut2?((_exp10f((rgb.z - d) / c) - b) / a):((rgb.z - f) / e);
-}
-  else if (tf == 12){  // BMFilm
+  } else if (tf == 12){  // BMFilm
     const float p1 = 0.06031746;
     const float p2 = 0.00712130;
     const float p3 = 0.20123443;
@@ -1054,203 +739,54 @@ __DEVICE__ float3 log2lin(float3 rgb, int tf) {
     rgb.x = rgb.x<=p1?rgb.x*p3-p2:(spowf(10,(rgb.x-p4)/p5)-p6)/p7;
     rgb.y = rgb.y<=p1?rgb.y*p3-p2:(spowf(10,(rgb.y-p4)/p5)-p6)/p7;
     rgb.z = rgb.z<=p1?rgb.z*p3-p2:(spowf(10,(rgb.z-p4)/p5)-p6)/p7;
-}
+  }
   return rgb;
 }
 
-
 //Based on Jed Smith Sigmoid
 __DEVICE__ float tonescale(float in, float sp, float tp, float Pslope, float px, float py,float s0,float t0)
-  {
-
+{
   //calculate Shoulder
-    //float s0= 1.0;
-    //float t0= 0.0;
-    float ss =spowf(((spowf((Pslope*((s0-px)/(1-py))),sp)-1)*(spowf(Pslope*(s0-px),-sp))),-1/sp);
-    float ms = Pslope*(in-px)/ss;
-    float fs = ms/spowf(1+(spowf(ms,sp)),1/sp);
+  //float s0= 1.0;
+  //float t0= 0.0;
+  float ss =spowf(((spowf((Pslope*((s0-px)/(1-py))),sp)-1)*(spowf(Pslope*(s0-px),-sp))),-1/sp);
+  float ms = Pslope*(in-px)/ss;
+  float fs = ms/spowf(1+(spowf(ms,sp)),1/sp);
 
   //calculate Toe
-    float ts =spowf(((spowf((Pslope*((px-t0)/(py))),tp)-1)*(spowf(Pslope*(px-t0),-tp))),-1/tp);
-    float mr = (Pslope*(in-px))/-ts;
-    float ft = mr/spowf(1+(spowf(mr,tp)),1/tp);
+  float ts =spowf(((spowf((Pslope*((px-t0)/(py))),tp)-1)*(spowf(Pslope*(px-t0),-tp))),-1/tp);
+  float mr = (Pslope*(in-px))/-ts;
+  float ft = mr/spowf(1+(spowf(mr,tp)),1/tp);
 
-
-    in = in>=px? ss*fs+py:-ts*ft+py;
-
+  in = in>=px? ss*fs+py:-ts*ft+py;
 
   return in;
-
-  }
-
-
-
+}
 
 // Pure LintoLog
 __DEVICE__ float LintoLog(float in,float mn, float mx)
-  {
-
-    float offs = _powf(2,mn);
-    in = _logf(in/0.18+offs)/_logf(2);
-    //in = _fmaxf(in, mn);
-    in = (in-mn)/(mx-mn);
+{
+  float offs = _powf(2,mn);
+  in = _logf(in/0.18+offs)/_logf(2);
+  //in = _fmaxf(in, mn);
+  in = (in-mn)/(mx-mn);
 
   return in;
-
-  }
+}
 
   __DEVICE__ float LogtoLin(float in,float mn, float mx)
-  {
-    float offs = _powf(2,mn);
-    in = 0.18*(_powf(2,(in*(mx-mn)+mn))-offs);
-
-
-  return in;
-
-  }
-
-
-
-//High Guard Rail
-
-
-__DEVICE__ float3 highguardrail(float3 in,Chromaticities N,float compensation,float upper_bound)
 {
-   float3x3 M= RGBtoXYZ(N);
-   float3 lumc = M.y;
-
-
-   float Y =(in.x*lumc.x)+(in.y*lumc.y)+(in.z*lumc.z);
-
-   float3 chr = in;
-
-   chr.x = in.x - Y;
-   chr.y = in.y - Y;
-   chr.z = in.z - Y;
-
-   float chrominance = _fmaxf(_fmaxf(chr.x,chr.y),chr.z);
-
-   float relative_luminance = _fmaxf(_fmaxf(in.x,in.y),in.z)/upper_bound;
-
-   float chrominance_coeff = relative_luminance>upper_bound?spowf((upper_bound/relative_luminance),compensation):1.0;
-
-   float new_max_rgb = Y+chrominance_coeff*chrominance;
-
-   float scale = new_max_rgb>upper_bound? upper_bound/new_max_rgb:1.0;
-
-
-  in.x = scale*(Y + chr.x*chrominance_coeff);
-  in.y = scale*(Y + chr.y*chrominance_coeff);
-  in.z = scale*(Y + chr.z*chrominance_coeff);
-
-
-  return in;
-
-}
-
-
-__DEVICE__ float3 Lowrail(float3 in,Chromaticities N)
-{
-   float3x3 M= RGBtoXYZ(N);
-   float3 lumc = M.y;
-   float Y = _fabs(in.x*lumc.x)+_fabs(in.y*lumc.y)+_fabs(in.z*lumc.z);
-   //float Y = (in.x*lumc.x)+(in.y*lumc.y)+(in.z*lumc.z);
-   //Y = Y<0?Yneg:Y;
-   float mn = _fminf(in.x, _fminf(in.y, in.z));
-   float offset = _fmaxf(-mn,0.0);
-   float3 rgb = in;
-   rgb.x = in.x + offset;
-   rgb.y = in.y + offset;
-   rgb.z= in.z + offset;
-   float Y2 = (rgb.x)*(lumc.x)+(rgb.y)*(lumc.y)+(rgb.z)*(lumc.z);
-   float luminanceratio = Y2>Y? Y/Y2:1.0;
-
-   float3 out;
-
-   out.x = luminanceratio*rgb.x;
-   out.y = luminanceratio*rgb.y;
-   out.z = luminanceratio*rgb.z;
-
-   out = maxf3(0.0,out);
-
-
-   return out;
-
-}
-
-
-   __DEVICE__ float tonescale2(float in, float sp, float tp, float Pslope, float px, float py,float s0,float t0)
-  {
-
-  //calculate Shoulder
-    float pwx = 1;
-    float pbx = 0;
-    float psx = sp/_sqrtf(Pslope*Pslope+1)+px;
-    float psy = (sp*Pslope)/_sqrtf(Pslope*Pslope+1)+py;
-    float ptx = -tp/_sqrtf(Pslope*Pslope+1)+px;
-    float pty = (-tp*Pslope)/_sqrtf(Pslope*Pslope+1)+py;
-    float m = (psy-pty)/(psx-ptx);
-    float b = pty-ptx*m;
-    float mt =  m*_powf((m*ptx+b),0);
-    float flin = m*in+b;
-    //float filin = (in-b)/m;
-    float Bt = m*(ptx-pbx)/(pty-t0);
-    float At = _logf(pty-t0)-Bt*_logf(ptx-pbx);
-    float ftoe = _expf(At+Bt*_logf(in-pbx))+t0;
-    float iftoe = _expf((_logf((in-t0)-At))/Bt)+pbx;
-    float Bs = m*(pwx-psx)/(s0-psy);
-    float As = _logf(s0-psy)-Bs*_logf(pwx-psx);
-    float fsh = -_expf(As+Bs*_logf(-(in-pwx)))+s0;
-    float fish = -_expf((_logf(-(in-s0))-As)/Bs)+pwx;
-
-    in = _fminf(1,in);
-    in = _fmaxf(0,in);
-    in = in<=ptx?ftoe:ptx<in && in<psx?flin:in>=psx?fsh:in;
-    //in = isnan(in)?s0:in;
-
-
-  return in;
-}
-
-
-__DEVICE__ float tonescale3(float in, float sp, float tp, float Pslope, float Pslength,float Ptlength,float px, float py,float slx,float sly,float tlx,float tly)
-{
-
-  //calculate Shoulder
-float stx = ((Pslength)/_sqrtf(Pslope*Pslope+1))+px;
-float sty = ((Pslength*Pslope)/_sqrtf(Pslope*Pslope+1))+py;
-float ttx = -Ptlength/(_sqrtf(Pslope*Pslope+1))+px;
-float tty= (-Ptlength*Pslope)/(_sqrtf(Pslope*Pslope+1))+py;
-float m = (sty-tty)/(stx-ttx);
-float ss = (((spowf(m*(slx-stx)  /(sly-sty),sp)  -1))*(spowf(m*(slx-stx)  ,-sp)));
-ss = spowf(_fabs(ss),-1/sp);
-float titx = 1-ttx;
-float tity = 1-tty;
-float tilx = 1-tlx;
-float tily = 1-tly;
-float ts = spowf(((spowf(m*(tilx-titx),-tp))*(spowf(m*(tilx-titx)/(tily-tity),tp)-1)),-1/tp);
-float mss = m*(in-stx)/ss;
-float mts = m*(in-ttx)/-ts;
-float fs = mss/spowf(1+spowf(mss,sp),1/sp);
-float ft = mts/spowf(1+spowf(mts,tp),1/tp);
-float tis = spowf(((spowf((tly-tty)/m,-tp  ))*(spowf((tly-tty)   / (m*(tlx-ttx)),tp)-1)),-1/tp);
-float b = tty-m*ttx;
-
-float flin = m*in+b;
-//float fss = ss*fs+sty;
-float fts = -ts*ft+tty;
-
-in = in < ttx ? fts : stx >= in && ttx <= in ? flin : in>stx ? ss*fs+sty:in;
+  float offs = _powf(2,mn);
+  in = 0.18*(_powf(2,(in*(mx-mn)+mn))-offs);
 
   return in;
 }
 
 __DEVICE__ float ShoulderSigmoid(float in,float sp,float Pslength,float slx){
-
   float px =  0.5;
-  float py =  0.5;
-  float tlx = 0.0;
-  float tly = 0.0;
+  // float py =  0.5;
+  // float tlx = 0.0;
+  // float tly = 0.0;
   float sly = 1.0;
 
   float stx = Pslength/_sqrtf(2) + px;
@@ -1266,162 +802,7 @@ __DEVICE__ float ShoulderSigmoid(float in,float sp,float Pslength,float slx){
   float Out = in > stx ? fss : in;
 
   return Out;
-
 }
-
-__DEVICE__ float BrightCoeffRGB(Chromaticities Ingamut,float3 rgb){
-
-  rgb = RGB2HCL(Ingamut,rgb);
-
-  //rgb.y = 1;
-
-  float3 complementary = rgb;
-
-  complementary.x = complementary.x + 0.5;
-  complementary.x = complementary.x>1?complementary.x - 1:complementary.x;
-
-  rgb = HCL2HML(Ingamut,rgb);
-  complementary = HCL2HML(Ingamut,complementary);
-
-  float coeff = rgb.y== 0?0:complementary.y/(complementary.y+rgb.y);
-  //coeff = rgb.y*coeff;
-  return coeff;
-  //return complementary.y;
-
-}
-
-__DEVICE__ float BrightCoeffHCB(Chromaticities Ingamut,float3 rgb){
-
-
-  //rgb.y = 1;
-
-  float3 complementary = rgb;
-
-  complementary.x = complementary.x + 0.5;
-  complementary.x = complementary.x>1?complementary.x - 1:complementary.x;
-
-  rgb = HCL2HML(Ingamut,rgb);
-  complementary = HCL2HML(Ingamut,complementary);
-
-  float coeff = rgb.y== 0?0:complementary.y/(complementary.y+rgb.y);
-  //coeff = rgb.y*coeff;
-  return coeff;
-  //return complementary.y;
-
-}
-
-__DEVICE__ float3 Gamutlimiter(float3 rgb,Chromaticities Ingamut,float sp,float Pslength,float slx){
-
-          float coe = BrightCoeffRGB(Ingamut,rgb);
-
-          float3 Out = RGB2HCL(Ingamut,rgb);
-
-          coe = coe==0?1:coe/(coe+(1-coe)*Out.y);
-
-          Out.z = _fabs(Out.z);
-
-          Out.z = Out.z/coe;
-
-          //Out.y = tonescale3(Out.y, 4.115, 1.54, 1.01 , 0.344, 0.14 , 0.5 , 0.5 , 0.95 , 1.0 , 0.0 ,0.0);
-          Out.y = ShoulderSigmoid(Out.y,sp,Pslength,slx);
-
-          Out.y = _fminf(1.0,Out.y);
-
-          coe = BrightCoeffHCB(Ingamut,Out);
-
-          coe = coe==0?1:coe/(coe+(1-coe)*Out.y);
-
-          Out.z = Out.z*coe;
-
-          Out = HCL2RGB(Ingamut,Out);
-
-
-          return Out;
-
-}
-
-__DEVICE__ float3 HMLSaturation(float3 rgb,Chromaticities Ingamut,float sat){
-
-          float coe = BrightCoeffRGB(Ingamut,rgb);
-
-          float3 Out = RGB2HCL(Ingamut,rgb);
-
-          coe = coe==0?1:coe/(coe+(1-coe)*Out.y);
-
-          Out.z = _fabs(Out.z);
-
-          Out.z = Out.z/coe;
-
-          //Out.y = tonescale3(Out.y, 4.115, 1.54, 1.01 , 0.344, 0.14 , 0.5 , 0.5 , 0.95 , 1.0 , 0.0 ,0.0);
-          Out.y = Out.y*sat;
-
-          //Out.y = _fminf(1.0,Out.y);
-
-          coe = BrightCoeffHCB(Ingamut,Out);
-
-          coe = coe==0?1:coe/(coe+(1-coe)*Out.y);
-
-          Out.z = Out.z*coe;
-
-          Out = HCL2RGB(Ingamut,Out);
-
-
-          return Out;
-
-}
-
-
-__DEVICE__ float3 desaturate(float3 in,Chromaticities N,float sat)
-{
-
-  float3x3 mat = RGBtoXYZ(N);
-  float lumr = mat.y.x;
-  float lumg = mat.y.y;
-  float lumb = mat.y.z;
-
-  float Y =  in.x*(lumr)+in.y*(lumg)+in.z*(lumb);
-
-  in.x = (in.x-Y)*sat+Y;
-  in.y = (in.y-Y)*sat+Y;
-  in.z = (in.z-Y)*sat+Y;
-
-  return in;
-
-}
-
-__DEVICE__ float3 highguardrail2(float3 in,Chromaticities Ingamut,float sp,float Pslength,float slx)
-{
-
-          float coe = BrightCoeffRGB(Ingamut,in);
-
-          float3 Out = RGB2HCL(Ingamut,in);
-
-          coe = coe==0?1:coe/(coe+(1-coe)*Out.y);
-
-          Out.z = _fabs(Out.z);
-
-          Out.z = Out.z/coe;
-
-          //Out.z = tonescale3(Out.z, 4.115, 1.54, 1.01 , 0.344, 0.14 , 0.5 , 0.5 , 0.95 , 1.0 , 0.0 ,0.0);
-          Out.z = ShoulderSigmoid(Out.z,sp,Pslength,slx);
-          //ShoulderSigmoid(Out.z,2.21,0.583,1.1);
-
-          Out.z = _fminf(1.0,Out.z);
-
-          coe = BrightCoeffHCB(Ingamut,Out);
-
-          coe = coe==0?1:coe/(coe+(1-coe)*Out.y);
-
-          Out.z = Out.z*coe;
-
-          Out = HCL2RGB(Ingamut,Out);
-
-
-
-   return Out;
-
-}
-
 
 __DEVICE__ float3 eotf_hlg(float3 rgb, int inverse) {
   // Aply the HLG Forward or Inverse EOTF. Implements the full ambient surround illumination model
@@ -1430,12 +811,13 @@ __DEVICE__ float3 eotf_hlg(float3 rgb, int inverse) {
   // Perceptual Quantiser (PQ) to Hybrid Log-Gamma (HLG) Transcoding: https://www.bbc.co.uk/rd/sites/50335ff370b5c262af000004/assets/592eea8006d63e5e5200f90d/BBC_HDRTV_PQ_HLG_Transcode_v2.pdf
 
   const float HLG_Lw = 1000.0f;
-//   const float HLG_Lb = 0.0f;
+  // const float HLG_Lb = 0.0f;
   const float HLG_Ls = 5.0f;
   const float h_a = 0.17883277f;
   const float h_b = 1.0f - 4.0f * 0.17883277f;
   const float h_c = 0.5f - h_a * _logf(4.0f * h_a);
   const float h_g = 1.2f * _powf(1.111f, _log2f(HLG_Lw / 1000.0f)) * _powf(0.98f, _log2f(_fmaxf(1e-6f, HLG_Ls) / 5.0f));
+
   if (inverse == 1) {
     float Yd = 0.2627f * rgb.x + 0.6780f * rgb.y + 0.0593f * rgb.z;
     // HLG Inverse OOTF
@@ -1455,7 +837,6 @@ __DEVICE__ float3 eotf_hlg(float3 rgb, int inverse) {
   }
   return rgb;
 }
-
 
 __DEVICE__ float3 eotf_pq(float3 rgb, int inverse, int jz) {
   // Apply the ST-2084 PQ Forward or Inverse EOTF
@@ -1492,7 +873,6 @@ __DEVICE__ float3 eotf_pq(float3 rgb, int inverse, int jz) {
   return rgb;
 }
 
-
 /* ##########################################################################
     Color Models
     ---------------------------------
@@ -1505,8 +885,6 @@ __DEVICE__ float3 cartesian_to_polar(float3 a) {
 __DEVICE__ float3 polar_to_cartesian(float3 a) {
   return make_float3(a.x, a.y * _cosf(a.z), a.y * _sinf(a.z));
 }
-
-
 
 /*
   ICtCp perceptual colorspace
@@ -1539,7 +917,6 @@ __DEVICE__ float3 ictcp_to_xyz(float3 xyz, float Lw, int cyl) {
   return xyz;
 }
 
-
 /*JzAzBz perceptual colorspace
     ----------------------------------
     Safdar, M., Cui, G., Kim, Y. J., & Luo, M. R. (2017).
@@ -1549,10 +926,8 @@ __DEVICE__ float3 ictcp_to_xyz(float3 xyz, float Lw, int cyl) {
     https://www.osapublishing.org/oe/fulltext.cfm?uri=oe-25-13-15131&id=368272
     https://observablehq.com/@jrus/jzazbz
 */
-
 # define matrix_jzazbz_xyz_to_lms make_float3x3(make_float3(0.41479f, 0.579999f, 0.014648f), make_float3(-0.20151f, 1.12065f, 0.0531008f), make_float3(-0.0166008f, 0.2648f, 0.66848f))
 # define matrix_jzazbz_lms_p_to_izazbz make_float3x3(make_float3(0.5f, 0.5f, 0.0f), make_float3(3.524f, -4.06671f, 0.542708f), make_float3(0.199076f, 1.0968f, -1.29588f))
-
 
 __DEVICE__ float3 xyz_to_jzlms(float3 xyz) {
   float3 lms;
@@ -1573,8 +948,6 @@ __DEVICE__ float3 jzlms_to_xyz(float3 lms) {
   return xyz;
 }
 
-
-
 __DEVICE__ float3 xyz_to_jzazbz(float3 xyz, int cyl) {
   // Convert input XYZ D65 aligned tristimulus values into JzAzBz perceptual colorspace,
   // if cyl==1: output cylindrical JCh : J = luma, C = chroma, h = hue in radians
@@ -1592,7 +965,6 @@ __DEVICE__ float3 xyz_to_jzazbz(float3 xyz, int cyl) {
   return lms;
 }
 
-
 __DEVICE__ float3 jzazbz_to_xyz(float3 jz, int cyl) {
   const float d = -0.56f;
   const float d_0 = 1.6295499532821565e-11f;
@@ -1606,90 +978,20 @@ __DEVICE__ float3 jzazbz_to_xyz(float3 jz, int cyl) {
   return jz;
 }
 
-
-
-/* Truelight Yrg Colorspace, described in
-    "Chromaticity Coordinates for Graphic Arts Based on CIE 2006 LMS with Even Spacing of Munsell Colours" by Richard Kirk
-    https://doi.org/10.2352/issn.2169-2629.2019.27.38
-*/
-__DEVICE__ float3 lms_to_yrg(float3 lms, int cyl) {
-  // Convert input D65 white-normalized Truelight LMS to Truelight Yrg colorspace
-  float a = lms.x + lms.y + lms.z;
-  float l = a == 0.0f ? 0.0f : lms.x / a;
-  float m = a == 0.0f ? 0.0f : lms.y / a;
-
-  float3 yrg = make_float3(
-    0.68990272f * lms.x + 0.34832189f * lms.y,
-    1.0671f * l - 0.6873f * m + 0.02062f,
-    -0.0362f * l + 1.7182f * m - 0.05155f);
-
-  if (cyl == 1) {
-    yrg.y -= 0.14722f;
-    yrg.z -= 0.50911666f;
-    yrg = cartesian_to_polar(yrg);
-  }
-  return yrg;
-}
-
-__DEVICE__ float3 yrg_to_lms(float3 yrg, int cyl) {
-  // Convert input Truelight Yrg to D65 white-normalized Truelight LMS
-  if (cyl == 1) {
-    yrg = polar_to_cartesian(yrg);
-    yrg.y += 0.14722f;
-    yrg.z += 0.50911666f;
-  }
-  float l = 0.95f * yrg.y + 0.38f * yrg.z;
-  float m = 0.02f * yrg.y + 0.59f * yrg.z + 0.03f;
-  float a = yrg.x / (0.68990272f * l + 0.34832189f * m);
-  float3 lms = make_float3(l * a, m * a, (1.0f - l - m) * a);
-  return lms;
-}
-
-
-
-
-/* ##########################################################################
-    Utility Functions
-    --------------------
-*/
-
-__DEVICE__ float compress_parabolic(float x, float t0, float x0, float y0) {
-  /* Parabolic Compression Function
-      Threshold
-        Only values above threshold point (t0, t0) will be compressed.
-      Intersection constraint
-        The coordinate (x0, y0) specifies the compression function intersection
-        constraint. The input x value x0 is compressed to the output y value y0.
-      https://www.desmos.com/calculator/khowxlu6xh
-  */
-  const float s = (y0 - t0)/_sqrtf(x0 - y0);
-  const float ox = t0 - s * s / 4.0f;
-  const float oy = t0 - s * sqrt(s * s / 4.0f);
-
-  return (x < t0 ? x : s * _sqrtf(x - ox) + oy);
-}
-
-__DEVICE__ float3 gamut_compress_rgb(float3 xyz, float th, float ds, int av) {
-  // Chromaticity-linear gamut compression, given threshold th and distance ds.
-  // if av==1, average of rgb will be used as achromatic axis instead of max of rgb
-
-  float3 rgb = mult_f3_f33(xyz, inv_f33(matrix_rec2020_to_xyz));
-
-  float mx = _fmaxf(rgb.x, _fmaxf(rgb.y, rgb.z));
-  float mn = _fminf(rgb.x, _fminf(rgb.y, rgb.z));
-  float ch = mx == 0.0f ? 0.0f : (mx - mn) / mx; // classic chroma
-  float ch_c = compress_parabolic(ch, th, ds, 1.0f);
-  float f = ch == 0.0f ? 0.0f : ch_c / ch;
-
-  // Gamut compress
-  if (av == 0) {
-    rgb = mx * (1.0f - f) + rgb * f;
+__DEVICE__ float3 log2ocio(float3 rgb, float mg, float mn, float mx, float o, int inv) {
+  if (inv == 1) {
+    rgb.x = mg *_powf( 2.0f , rgb.x * (mx - mn) + mn) - o;
+    rgb.y = mg *_powf( 2.0f , rgb.y * (mx - mn) + mn) - o;
+    rgb.z = mg *_powf( 2.0f , rgb.z * (mx - mn) + mn) - o;
   } else {
-    float mean = (rgb.x + rgb.y + rgb.z) / 3.0f;
-    rgb = mean * (1.0f - f) + rgb * f;
+    rgb.x = _fmaxf(rgb.x,_powf(2,mn));
+    rgb.y = _fmaxf(rgb.y,_powf(2,mn));
+    rgb.z = _fmaxf(rgb.z,_powf(2,mn));
+
+    rgb.x = (_log2f(rgb.x/mg+o)-mn)/(mx-mn);
+    rgb.y = (_log2f(rgb.y/mg+o)-mn)/(mx-mn);
+    rgb.z = (_log2f(rgb.z/mg+o)-mn)/(mx-mn);
   }
 
-  rgb = mult_f3_f33(rgb, matrix_rec2020_to_xyz);
-
-  return rgb;
+	return rgb;
 }
