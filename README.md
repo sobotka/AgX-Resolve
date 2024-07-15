@@ -30,11 +30,17 @@ You'll have to take it for a try.
 
 # How
 
-1. Install as per Where above.
-2. Add a Colour Space Transform node to your footage. Convert to ARRI Wide Gamut Version 3, and ARRI LogC Version 3.
-3. Turn DaVinci's Garbage Tone Mapping to None.
-5. Place a DCTL node after the footage. Select the Camera-AgX DCTL.
-6. Experiment.
+  1. Install as per Where above.
+      1. Insert a Colour Space Transform node *as required*.
+      1. Turn DaVinci's Garbage Tone Mapping to None.
+      1. Place the DCTL node after the CST. Select the Camera-AgX DCTL.
+2. Experiment.
+
+Note that defaults are set for colourists, and are tuned to:
+  * ARRI Wide Gamut Version 3
+  * ARRI LogC Version 3
+
+That said, an author can set the values to whatever they choose, and the AgX mechanic will hold up.
 
 # Parameters
 These parameters work together, and thus one can expect any single parameter to drive other potential colour qualia.
@@ -68,3 +74,14 @@ Working middle grey point. Set to the working middle grey encoded value of the W
 
 ## Log Encoded Output
 Toggle to control whether to encode to the Working Log Encoding with Output Primaries for the output
+
+# When using AgX Kraken...
+
+The following settings *should* match the default output of AgX Kraken:
+  * RGB Attenuation `0.2`
+  * RGB Hue Flight: `0.0`
+  * RGB Purity: `0.2` (Match Attenuation)
+  * Shoulder Contrast: `3.25`
+  * Toe Contrast: `3.0`
+  * General Contrast: `2.0`
+  * Working Middle Grey: `0.3939` (`6.5 / (6.5 + 10.0)`)
