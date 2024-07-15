@@ -54,6 +54,9 @@ General contrasts of specified regions.
 ## Input Primaries
 Input CIE colourimetry primaries for the working space.
 
+## Input Transfer Characteristic Encoding
+Input transfer characteristic. Now you can avoid a CST if coming from an EXR.
+
 ## Working Log Encoding
 Log-like transfer for the working space.
 
