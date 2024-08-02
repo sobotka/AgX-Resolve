@@ -84,4 +84,4 @@ The following settings *should* match the default output of AgX Kraken:
   * Shoulder Contrast: `3.25`
   * Toe Contrast: `3.0`
   * General Contrast: `2.0`
-  * Working Middle Grey: `0.3939` (`6.5 / (6.5 + 10.0)`)
+  * Working Middle Grey: `0.6061` (`6.5 / (6.5 + 10.0)`)

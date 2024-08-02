@@ -193,6 +193,10 @@ __DEVICE__ float3 _mixf3(float3 a, float3 b, float f) {
   return make_float3(_mixf(a.x, b.x, f), _mixf(a.y, b.y, f), _mixf(a.z, b.z, f));
 }
 
+__DEVICE__ float3 _log2f3(float3 RGB) {
+  return make_float3(_log2f(RGB.r), _log2f(RGB.g), _log2f(RGB.b));
+}
+
 __DEVICE__ float _smoothstepf(float e0, float e1, float x) {
   // return smoothstep of float x between e0 and e1
   x = _clampf((x - e0) / (e1 - e0), 0.0f, 1.0f);
@@ -632,13 +636,23 @@ __DEVICE__ float3 lin2log(float3 rgb, int tf) {
     rgb.x = rgb.x >= t ? ((_log2f(a * rgb.x + 64.f) - 6.f) / 14.f) * b + c : (rgb.x - t) / s;
     rgb.y = rgb.y >= t ? ((_log2f(a * rgb.y + 64.f) - 6.f) / 14.f) * b + c : (rgb.y - t) / s;
     rgb.z = rgb.z >= t ? ((_log2f(a * rgb.z + 64.f) - 6.f) / 14.f) * b + c : (rgb.z - t) / s;
-  } else if (tf == 10) { // CanonLog2
-    rgb.x = rgb.x/0.9f ;
-    rgb.y = rgb.y/0.9f ;
-    rgb.z = rgb.z/0.9f ;
-    rgb.x = rgb.x<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.x ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.x + 1.0f ) + 0.092864125f;
-    rgb.y = rgb.y<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.y ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.y + 1.0f ) + 0.092864125f;
-    rgb.z = rgb.z<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.z ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.z + 1.0f ) + 0.092864125f;
+  } else if (tf == 10) { // Was CanonLog2, now Normalized Log2
+    // total_exposure = maximum_ev - minimum_ev
+
+    //   in_od = numpy.asarray(in_od)
+    //   in_od[in_od <= 0.0] = numpy.finfo(float).eps
+
+    //   output_log = numpy.clip(
+    //       numpy.log2(in_od / in_middle_grey),
+    //       minimum_ev,
+    //       maximum_ev
+    //   )
+    // return as_numeric((output_log - minimum_ev) / total_exposure)
+
+    rgb = _log2f3(rgb / 0.18f);
+    rgb = clampf3(rgb, -10.0f, 6.5f);
+
+    rgb = (rgb + 10.0f) / 16.5f;
   } else if (tf == 11){  // Flog2
     const float a = 5.555556f;
     const float b = 0.064829f;
@@ -871,127 +885,4 @@ __DEVICE__ float3 eotf_pq(float3 rgb, int inverse, int jz) {
     rgb.z = _sign(rgb.z) * _powf((_fabs(rgb.z) - c1) / (c2 - c3 * _fabs(rgb.z)), 1.0f / m1) * Lp;
   }
   return rgb;
-}
-
-/* ##########################################################################
-    Color Models
-    ---------------------------------
-*/
-
-__DEVICE__ float3 cartesian_to_polar(float3 a) {
-  return make_float3(a.x, _hypotf(a.y, a.z), _atan2f(a.z, a.y));
-}
-
-__DEVICE__ float3 polar_to_cartesian(float3 a) {
-  return make_float3(a.x, a.y * _cosf(a.z), a.y * _sinf(a.z));
-}
-
-/*
-  ICtCp perceptual colorspace
-  -----------------------------------
-  ITU-R Rec BT.2100-2: https://www.itu.int/rec/R-REC-BT.2100
-  ITU-R Rep BT.2390-9: https://www.itu.int/pub/R-REP-BT.2390
-*/
-#define matrix_ictcp_rec2020_to_lms make_float3x3(make_float3(1688.0f, 2146.0f, 262.0f) / 4096.0f, make_float3(683.0f, 2951.0f, 462.0f) / 4096.0f, make_float3(99.0f, 309.0f, 3688.0f) / 4096.0f)
-#define matrix_ictcp_lms_to_ictcp make_float3x3(make_float3(0.5f, 0.5f, 0.0f), make_float3(6610.0f, -13613.0f, 7003.0f) / 4096.0f, make_float3(17933.0f, -17390.0f, -543.0f) / 4096.0f)
-
-__DEVICE__ float3 xyz_to_ictcp(float3 xyz, float Lw, int cyl) {
-  // Convert from XYZ to ICtCp colorspace, with optional cylindrical output conversion
-  xyz = mult_f3_f33(xyz, inv_f33(matrix_rec2020_to_xyz));
-  xyz = mult_f3_f33(xyz, matrix_ictcp_rec2020_to_lms);
-  xyz = eotf_pq(xyz / Lw, 1, 0);
-  xyz = mult_f3_f33(xyz, matrix_ictcp_lms_to_ictcp);
-  if (cyl == 1) // Convert to cylindrical
-    xyz = cartesian_to_polar(xyz);
-  return xyz;
-}
-
-__DEVICE__ float3 ictcp_to_xyz(float3 xyz, float Lw, int cyl) {
-  // Convert from ICtCp colorspace to XYZ, with optional cylindrical input conversion
-  if (cyl == 1) // Convert to cartesian
-    xyz = polar_to_cartesian(xyz);
-  xyz = mult_f3_f33(xyz, inv_f33(matrix_ictcp_lms_to_ictcp));
-  xyz = eotf_pq(xyz, 0, 0) * Lw;
-  xyz = mult_f3_f33(xyz, inv_f33(matrix_ictcp_rec2020_to_lms));
-  xyz = mult_f3_f33(xyz, matrix_rec2020_to_xyz);
-  return xyz;
-}
-
-/*JzAzBz perceptual colorspace
-    ----------------------------------
-    Safdar, M., Cui, G., Kim, Y. J., & Luo, M. R. (2017).
-        Perceptually uniform color space for image signals including high dynamic
-        range and wide gamut. Optics Express, 25(13), 15131.
-        doi:10.1364/OE.25.015131
-    https://www.osapublishing.org/oe/fulltext.cfm?uri=oe-25-13-15131&id=368272
-    https://observablehq.com/@jrus/jzazbz
-*/
-# define matrix_jzazbz_xyz_to_lms make_float3x3(make_float3(0.41479f, 0.579999f, 0.014648f), make_float3(-0.20151f, 1.12065f, 0.0531008f), make_float3(-0.0166008f, 0.2648f, 0.66848f))
-# define matrix_jzazbz_lms_p_to_izazbz make_float3x3(make_float3(0.5f, 0.5f, 0.0f), make_float3(3.524f, -4.06671f, 0.542708f), make_float3(0.199076f, 1.0968f, -1.29588f))
-
-__DEVICE__ float3 xyz_to_jzlms(float3 xyz) {
-  float3 lms;
-  lms = make_float3(1.15f * xyz.x - (1.15f - 1.0f) * xyz.z,
-        0.66f * xyz.y - (0.66f - 1.0f) * xyz.x,
-        xyz.z);
-  lms = mult_f3_f33(lms, matrix_jzazbz_xyz_to_lms);
-  return lms;
-}
-
-__DEVICE__ float3 jzlms_to_xyz(float3 lms) {
-  float3 xyz;
-  xyz = mult_f3_f33(lms, inv_f33(matrix_jzazbz_xyz_to_lms));
-  xyz = make_float3(
-    (xyz.x + (1.15f - 1.0f) * xyz.z) / 1.15f,
-    (xyz.y + (0.66f - 1.0f) * ((xyz.x + (1.15f - 1.0f) * xyz.z) / 1.15f)) / 0.66f,
-    xyz.z);
-  return xyz;
-}
-
-__DEVICE__ float3 xyz_to_jzazbz(float3 xyz, int cyl) {
-  // Convert input XYZ D65 aligned tristimulus values into JzAzBz perceptual colorspace,
-  // if cyl==1: output cylindrical JCh : J = luma, C = chroma, h = hue in radians
-  const float d = -0.56f;
-  const float d_0 = 1.6295499532821565e-11f;
-  float3 lms;
-  lms = xyz_to_jzlms(xyz);
-  lms = eotf_pq(lms, 1, 1);
-  lms = mult_f3_f33(lms, matrix_jzazbz_lms_p_to_izazbz);
-  lms.x = lms.x * (1.0f + d) / (1.0f + d * lms.x) - d_0;
-
-  // Convert to cylindrical
-  if (cyl == 1) lms = cartesian_to_polar(lms);
-
-  return lms;
-}
-
-__DEVICE__ float3 jzazbz_to_xyz(float3 jz, int cyl) {
-  const float d = -0.56f;
-  const float d_0 = 1.6295499532821565e-11f;
-  // Convert to cartesian
-  if (cyl == 1) jz = polar_to_cartesian(jz);
-
-  jz.x = (jz.x + d_0) / (1.0f + d - d * (jz.x + d_0));
-  jz = mult_f3_f33(jz, inv_f33(matrix_jzazbz_lms_p_to_izazbz));
-  jz = eotf_pq(jz, 0, 1);
-  jz = jzlms_to_xyz(jz);
-  return jz;
-}
-
-__DEVICE__ float3 log2ocio(float3 rgb, float mg, float mn, float mx, float o, int inv) {
-  if (inv == 1) {
-    rgb.x = mg *_powf( 2.0f , rgb.x * (mx - mn) + mn) - o;
-    rgb.y = mg *_powf( 2.0f , rgb.y * (mx - mn) + mn) - o;
-    rgb.z = mg *_powf( 2.0f , rgb.z * (mx - mn) + mn) - o;
-  } else {
-    rgb.x = _fmaxf(rgb.x,_powf(2,mn));
-    rgb.y = _fmaxf(rgb.y,_powf(2,mn));
-    rgb.z = _fmaxf(rgb.z,_powf(2,mn));
-
-    rgb.x = (_log2f(rgb.x/mg+o)-mn)/(mx-mn);
-    rgb.y = (_log2f(rgb.y/mg+o)-mn)/(mx-mn);
-    rgb.z = (_log2f(rgb.z/mg+o)-mn)/(mx-mn);
-  }
-
-	return rgb;
 }
