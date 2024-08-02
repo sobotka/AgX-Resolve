@@ -76,8 +76,9 @@ Working middle grey point. Set to the working middle grey encoded value of the W
 Toggle to control whether to encode to the Working Log Encoding with Output Primaries for the output
 
 # When using AgX Kraken...
+Likely easiest to use the AgX Kraken DCTL directly with the proper defaults set.
 
-The following settings *should* match the default output of AgX Kraken:
+If one wants to manually put the values in, the following settings *should* match the default output of AgX Kraken:
   * RGB Attenuation `0.2`
   * RGB Hue Flight: `0.0`
   * RGB Purity: `0.2` (Match Attenuation)
