@@ -632,13 +632,13 @@ __DEVICE__ float3 lin2log(float3 rgb, int tf) {
     rgb.x = rgb.x >= t ? ((_log2f(a * rgb.x + 64.f) - 6.f) / 14.f) * b + c : (rgb.x - t) / s;
     rgb.y = rgb.y >= t ? ((_log2f(a * rgb.y + 64.f) - 6.f) / 14.f) * b + c : (rgb.y - t) / s;
     rgb.z = rgb.z >= t ? ((_log2f(a * rgb.z + 64.f) - 6.f) / 14.f) * b + c : (rgb.z - t) / s;
-  } else if (tf == 10) { // CanonLog2
-    rgb.x = rgb.x/0.9f ;
-    rgb.y = rgb.y/0.9f ;
-    rgb.z = rgb.z/0.9f ;
-    rgb.x = rgb.x<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.x ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.x + 1.0f ) + 0.092864125f;
-    rgb.y = rgb.y<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.y ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.y + 1.0f ) + 0.092864125f;
-    rgb.z = rgb.z<0?-0.24136077f * _log10f( 1.0f - 87.099375f * rgb.z ) + 0.092864125f : 0.24136077f * _log10f( 87.099375f * rgb.z + 1.0f ) + 0.092864125f;
+  } else if (tf == 10) {//PureLog2 -10 stop under 0.18 and 6.5 over
+    float mx = 6.5;
+    float mn = -10;
+    float mg = 0.18;
+    rgb.x = (_log2f(rgb.x/mg)-mn)/(mx-mn); 
+    rgb.y = (_log2f(rgb.y/mg)-mn)/(mx-mn); 
+    rgb.z = (_log2f(rgb.z/mg)-mn)/(mx-mn); 
   } else if (tf == 11){  // Flog2
     const float a = 5.555556f;
     const float b = 0.064829f;
