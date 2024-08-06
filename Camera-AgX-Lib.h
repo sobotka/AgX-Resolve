@@ -194,7 +194,7 @@ __DEVICE__ float3 _mixf3(float3 a, float3 b, float f) {
 }
 
 __DEVICE__ float3 _log2f3(float3 RGB) {
-  return make_float3(_log2f(RGB.r), _log2f(RGB.g), _log2f(RGB.b));
+  return make_float3(_log2f(RGB.x), _log2f(RGB.y), _log2f(RGB.z));
 }
 
 __DEVICE__ float _smoothstepf(float e0, float e1, float x) {
