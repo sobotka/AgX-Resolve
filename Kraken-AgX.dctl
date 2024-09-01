@@ -1,12 +1,12 @@
-DEFINE_UI_PARAMS(rc, Red Attenuation Rate, DCTLUI_SLIDER_FLOAT, 0.2, 0.001, 0.999, 0.001)
-DEFINE_UI_PARAMS(gc, Green Attenuation Rate, DCTLUI_SLIDER_FLOAT, 0.2, 0.001, 0.999, 0.001)
-DEFINE_UI_PARAMS(bc,Blue Attenuation Rate, DCTLUI_SLIDER_FLOAT, 0.2, 0.001, 0.999, 0.001)
-DEFINE_UI_PARAMS(ored, Red Hue Flight, DCTLUI_SLIDER_FLOAT, 0.0, -25.0, 25.0, 0.05)
-DEFINE_UI_PARAMS(og, Green Hue Flight, DCTLUI_SLIDER_FLOAT, 0.0, -25.0, 25.0, 0.05)
-DEFINE_UI_PARAMS(ob, Blue Hue Flight, DCTLUI_SLIDER_FLOAT, 0.0, -25.0, 25.0, 0.05)
-DEFINE_UI_PARAMS(r_restore, Red Purity, DCTLUI_SLIDER_FLOAT, 0.2, -5.0, 0.999, 0.001)
-DEFINE_UI_PARAMS(g_restore, Green Purity, DCTLUI_SLIDER_FLOAT, 0.2, -5.0, 0.999, 0.001)
-DEFINE_UI_PARAMS(b_restore, Blue Purity, DCTLUI_SLIDER_FLOAT, 0.2, -5.0, 0.999, 0.001)
+DEFINE_UI_PARAMS(inset_red, Red Attenuation Rate, DCTLUI_SLIDER_FLOAT, 0.2, 0.001, 0.999, 0.001)
+DEFINE_UI_PARAMS(inset_green, Green Attenuation Rate, DCTLUI_SLIDER_FLOAT, 0.2, 0.001, 0.999, 0.001)
+DEFINE_UI_PARAMS(inset_blue, Blue Attenuation Rate, DCTLUI_SLIDER_FLOAT, 0.2, 0.001, 0.999, 0.001)
+DEFINE_UI_PARAMS(rotate_red, Red Hue Flight, DCTLUI_SLIDER_FLOAT, 0.0, -25.0, 25.0, 0.05)
+DEFINE_UI_PARAMS(rotate_green, Green Hue Flight, DCTLUI_SLIDER_FLOAT, 0.0, -25.0, 25.0, 0.05)
+DEFINE_UI_PARAMS(rotate_blue, Blue Hue Flight, DCTLUI_SLIDER_FLOAT, 0.0, -25.0, 25.0, 0.05)
+DEFINE_UI_PARAMS(outset_red, Red Purity, DCTLUI_SLIDER_FLOAT, 0.0, -1.0, 0.5, 0.001)
+DEFINE_UI_PARAMS(outset_green, Green Purity, DCTLUI_SLIDER_FLOAT, 0.0, -1.0, 0.5, 0.001)
+DEFINE_UI_PARAMS(outset_blue, Blue Purity, DCTLUI_SLIDER_FLOAT, 0.0, -1.0, 0.5, 0.001)
 DEFINE_UI_PARAMS(tp, Toe Contrast Power, DCTLUI_SLIDER_FLOAT, 3.0, 0.05, 10, 0.001)
 DEFINE_UI_PARAMS(sp, Shoulder Contrast Power, DCTLUI_SLIDER_FLOAT, 3.25, 0.05, 10, 0.001)
 DEFINE_UI_PARAMS(slope, General Contrast Power, DCTLUI_SLIDER_FLOAT, 2.0, 0.001, 5.0, 0.001)
@@ -238,17 +238,20 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
 
   //Pre calculate parameters
 
-  //SB2383 scale parameters
-  Chromaticities inset_chromaticities = InsetPrimaries(in_chromaticities,rc,gc,bc,ored,og,ob);
-  Chromaticities outset_chromaticities = InsetPrimaries(
-    in_chromaticities, r_restore, g_restore, b_restore, ored, og, ob
+  Chromaticities inset_chromaticities = InsetPrimaries(
+    in_chromaticities, inset_red, inset_green, inset_blue, rotate_red, rotate_green, rotate_blue
   );
 
-  float3x3 outsetmat= RGBtoRGB(in_chromaticities, outset_chromaticities);
-  float3x3 insetmat= RGBtoRGB(inset_chromaticities, in_chromaticities);
-  // float3x3 insetmat= inv_f33(outsetmat);
+  Chromaticities outset_chromaticities = InsetPrimaries(
+    in_chromaticities, outset_red, outset_green, outset_blue, rotate_red, rotate_green, rotate_blue
+  );
 
-  float mg = _powf(0.18,1/2.2);
+  float3x3 insetmat= RGBtoRGB(inset_chromaticities, in_chromaticities);
+  float3x3 outsetmat= RGBtoRGB(in_chromaticities, outset_chromaticities);
+
+  // float mg = _powf(0.18, 1/2.2);
+  // Working middle grey is 0.5 of the Kraken log encoding assumption.
+  float mg = 0.5;
   float lmg =  wmg;
 
   //Calculate Matrices
@@ -278,14 +281,14 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
   if (logoutput == 1)
     rgb=agx;
 
-  rgb.x = tonescale(rgb.x, sp, tp, slope, lmg, mg,1,0);
-  rgb.y = tonescale(rgb.y, sp, tp, slope, lmg, mg,1,0);
-  rgb.z = tonescale(rgb.z, sp, tp, slope, lmg, mg,1,0);
+  rgb.x = tonescale(rgb.x, sp, tp, slope, lmg, mg, 1,0);
+  rgb.y = tonescale(rgb.y, sp, tp, slope, lmg, mg, 1,0);
+  rgb.z = tonescale(rgb.z, sp, tp, slope, lmg, mg, 1,0);
   //rgb = clampf3(rgb,0,1);
 
   float3 img = rgb;
 
-  img  = spowf3(img,2.2);
+  img  = spowf3(img, 2.2);
 
   img = mult_f3_f33(img, outsetmat);
   img = mult_f3_f33(img, in_to_out);
