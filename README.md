@@ -46,7 +46,7 @@ That said, an author can set the values to whatever they choose, and the AgX mec
 These parameters work together, and thus one can expect any single parameter to drive other potential colour qualia.
 
 ## Attenuation Rate
-Greater values increase the rate of chromaticity attenuation as tristimulus values ascend. Lower values will slow the rate of attenuation. Slower rates may induce posterization.
+Greater values increase the rate of chromaticity attenuation as tristimulus values ascend. Lower values will slow the rate of attenuation. Slower rates may induce cognitively dissonant gradations, where a cognition mislocates the 2.5D "layer" from "under" to "over" or "through". For more information, please read the ramblings around [Picture Formation here](https://github.com/sobotka/scise/wiki/Picture-Formation).
 
 ## Hue Flight
 Controls the direction and rate of chromaticity angle flights. Value is degrees in CIE xy. Higher values will increase chromaticity angle flight speed toward the direction specified.
